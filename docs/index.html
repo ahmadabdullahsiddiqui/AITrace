@@ -29,6 +29,14 @@
             <p class="dz-sub">or <button type="button" id="browse-btn" class="link">browse files</button> · everything runs in your browser</p>
           </div>
         </div>
+        <div class="settings-row">
+          <label for="sensitivity">Detection sensitivity</label>
+          <select id="sensitivity">
+            <option value="balanced">Balanced — fewer flags, higher confidence</option>
+            <option value="high" selected>High — flags more suspect text (default)</option>
+            <option value="maximum">Maximum — most aggressive, more false positives</option>
+          </select>
+        </div>
         <p class="privacy-note">
           🔒 Your document never leaves this browser — parsing and AI-writing analysis run locally on your device.
           Only extracted citation titles/DOIs are checked against the free Crossref and OpenAlex APIs.

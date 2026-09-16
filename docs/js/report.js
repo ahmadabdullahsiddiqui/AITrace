@@ -4,8 +4,9 @@
 import { analyzeAiSignal } from './detection.js';
 import { extractReferences, verifyReferences } from './references.js';
 
-export async function buildReport(doc, filename) {
-  const ai = analyzeAiSignal(doc.text);
+export async function buildReport(doc, filename, opts = {}) {
+  const sensitivity = opts.sensitivity || 'high';
+  const ai = analyzeAiSignal(doc.text, sensitivity);
 
   const refEntries = extractReferences(doc.text);
   const refs = await verifyReferences(refEntries);
@@ -40,6 +41,8 @@ export async function buildReport(doc, filename) {
       overallBand: ai.overallBand,
       counts: ai.counts,
       method: ai.method,
+      sensitivity: ai.sensitivity,
+      sensitivityLabel: ai.sensitivityLabel,
       disclaimer: ai.disclaimer,
       flaggedParagraphs: flagged,
       allParagraphs: ai.paragraphs,

@@ -62,6 +62,12 @@ main { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
 .dz-title { font-size: 18px; margin: 10px 0 4px; }
 .dz-sub { color: var(--muted); font-size: 13.5px; margin: 0; }
 .link { background: none; border: none; color: var(--accent); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; }
+.settings-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.settings-row label { color: var(--muted); font-size: 13px; }
+.settings-row select {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; cursor: pointer;
+}
 .privacy-note { color: var(--muted); font-size: 12.5px; margin: 16px 0 0; }
 
 /* Progress */

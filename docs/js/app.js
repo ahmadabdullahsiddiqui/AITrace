@@ -58,9 +58,11 @@ async function analyze(file) {
       throw new Error('Could not extract enough text (the file may be scanned/image-only).');
     }
 
+    const sensEl = $('#sensitivity');
+    const sensitivity = (sensEl && sensEl.value) || 'high';
     progressText.textContent = 'Analyzing writing style & verifying references…';
     const started = performance.now();
-    const report = await buildReport(doc, file.name);
+    const report = await buildReport(doc, file.name, { sensitivity });
     report.timings = { totalMs: Math.round(performance.now() - started) };
 
     hide(progress);
@@ -119,7 +121,7 @@ function renderReport(r) {
       <div class="meter-label"><span>Lower signal</span><span>${ai.overallSignal == null ? 'n/a' : ai.overallSignal + '/100'}</span><span>Higher signal</span></div>
       <p style="margin-top:12px;color:var(--muted);font-size:13.5px">
         ${num(ai.counts.high)} strong · ${num(ai.counts.moderate)} moderate · ${num(ai.counts.low)} low
-        across ${num(ai.counts.assessed)} assessed sections (method: ${esc(ai.method)}).
+        across ${num(ai.counts.assessed)} assessed sections (method: ${esc(ai.method)} · sensitivity: ${esc(ai.sensitivityLabel || ai.sensitivity || '—')}).
       </p>
       <div class="disclaimer">⚠ ${esc(ai.disclaimer)}</div>
       <h4 style="margin:20px 0 10px;font-size:14px">Flagged sections (${ai.flaggedParagraphs.length})</h4>

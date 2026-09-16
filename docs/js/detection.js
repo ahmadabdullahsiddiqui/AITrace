@@ -78,12 +78,25 @@ function clamp(n, lo, hi) {
  * Score a single paragraph. Returns { signal (0-100), reasons[], metrics }.
  * Higher signal = more indicators associated with generated text.
  */
-function scoreParagraph(text) {
+// Sensitivity presets. Higher sensitivity lowers the band thresholds, boosts the
+// combined signal (gain), and assesses shorter paragraphs — flagging more suspect
+// text at the cost of more false positives. `high` is the default.
+export const SENSITIVITY = {
+  balanced: { label: 'Balanced', highCut: 65, modCut: 40, gain: 1.0, minWords: 25, minSentences: 2 },
+  high: { label: 'High', highCut: 50, modCut: 28, gain: 1.3, minWords: 15, minSentences: 2 },
+  maximum: { label: 'Maximum', highCut: 38, modCut: 18, gain: 1.6, minWords: 10, minSentences: 1 },
+};
+
+function resolveConfig(sensitivity) {
+  return SENSITIVITY[sensitivity] || SENSITIVITY.high;
+}
+
+function scoreParagraph(text, cfg) {
   const sentences = splitSentences(text);
   const ws = words(text);
   const reasons = [];
 
-  if (ws.length < 25 || sentences.length < 2) {
+  if (ws.length < cfg.minWords || sentences.length < cfg.minSentences) {
     // Too short to assess reliably — do not manufacture a signal.
     return {
       signal: null,
@@ -135,14 +148,14 @@ function scoreParagraph(text) {
   const openerScore = clamp(openerRepeat / 0.5, 0, 1) * 100;
   if (openerRepeat > 0.4) reasons.push('Repetitive sentence openers');
 
-  // Weighted combination -> 0..100 signal.
-  const signal = Math.round(
+  // Weighted combination -> 0..100 base signal, then apply the sensitivity gain.
+  const base =
     0.30 * uniformityScore +
-      0.20 * diversityScore +
-      0.30 * phraseScore +
-      0.10 * punctScore +
-      0.10 * openerScore
-  );
+    0.20 * diversityScore +
+    0.30 * phraseScore +
+    0.10 * punctScore +
+    0.10 * openerScore;
+  const signal = Math.round(base * cfg.gain);
 
   return {
     signal: clamp(signal, 0, 100),
@@ -158,29 +171,32 @@ function scoreParagraph(text) {
   };
 }
 
-function band(signal) {
+function band(signal, cfg) {
   if (signal == null) return 'unknown';
-  if (signal >= 65) return 'high';
-  if (signal >= 40) return 'moderate';
+  if (signal >= cfg.highCut) return 'high';
+  if (signal >= cfg.modCut) return 'moderate';
   return 'low';
 }
 
 /**
  * Analyse a whole document. Returns paragraph-level signals and an aggregate.
+ * @param {string} text
+ * @param {'balanced'|'high'|'maximum'} [sensitivity='high']
  */
-export function analyzeAiSignal(text) {
+export function analyzeAiSignal(text, sensitivity = 'high') {
+  const cfg = resolveConfig(sensitivity);
   const paragraphs = splitParagraphs(text);
   const scored = [];
   let charOffset = 0;
 
   paragraphs.forEach((p, i) => {
-    const res = scoreParagraph(p);
+    const res = scoreParagraph(p, cfg);
     scored.push({
       index: i,
       preview: p.length > 320 ? p.slice(0, 317) + '…' : p,
       length: p.length,
       signal: res.signal,
-      band: band(res.signal),
+      band: band(res.signal, cfg),
       reasons: res.reasons,
       metrics: res.metrics,
       charStart: charOffset,
@@ -209,10 +225,12 @@ export function analyzeAiSignal(text) {
 
   return {
     overallSignal: overall,
-    overallBand: band(overall),
+    overallBand: band(overall, cfg),
     counts,
     paragraphs: scored,
     method: 'heuristic-v1',
+    sensitivity,
+    sensitivityLabel: cfg.label,
     disclaimer:
       'This is a heuristic AI-writing signal derived from stylometric features. ' +
       'It is probabilistic evidence, not proof of AI authorship, and human editing cannot be excluded.',
