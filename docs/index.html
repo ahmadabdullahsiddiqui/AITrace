@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AITrace — Document Authenticity Analyzer</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- DOCX parser (mammoth) as a UMD global. pdf.js is imported as an ES module inside js/extraction.js. -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">◎</span>
+        <div>
+          <h1>AITrace</h1>
+          <p class="tagline">Evidence-based document authenticity — AI-writing signal &amp; citation verification</p>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="upload-panel" class="panel">
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="file-input" accept=".pdf,.docx,.txt" hidden />
+          <div class="dz-inner">
+            <div class="dz-icon">⇪</div>
+            <p class="dz-title">Drop a PDF, DOCX or TXT here</p>
+            <p class="dz-sub">or <button type="button" id="browse-btn" class="link">browse files</button> · everything runs in your browser</p>
+          </div>
+        </div>
+        <p class="privacy-note">
+          🔒 Your document never leaves this browser — parsing and AI-writing analysis run locally on your device.
+          Only extracted citation titles/DOIs are checked against the free Crossref and OpenAlex APIs.
+        </p>
+      </section>
+
+      <section id="progress" class="panel hidden">
+        <div class="spinner"></div>
+        <p id="progress-text">Analyzing document…</p>
+      </section>
+
+      <section id="error" class="panel error hidden"></section>
+
+      <section id="report" class="hidden"></section>
+    </main>
+
+    <footer>
+      <p>
+        AITrace is an evidence engine, not a verdict machine. AI-writing signals are probabilistic and
+        <strong>not proof of authorship</strong>. Open source · no paid APIs · runs entirely in your browser.
+      </p>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
