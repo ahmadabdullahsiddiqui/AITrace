@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AITrace">
+  <defs>
+    <linearGradient id="aitrace-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f8cff"/>
+      <stop offset="1" stop-color="#7db4ff"/>
+    </linearGradient>
+  </defs>
+  <!-- Brand badge: reads on light or dark backgrounds -->
+  <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#aitrace-bg)"/>
+  <!-- Magnifying lens (analysis / authenticity) -->
+  <circle cx="27" cy="27" r="13" fill="none" stroke="#ffffff" stroke-width="5"/>
+  <!-- Trace pulse inside the lens -->
+  <path d="M19 27 h4 l2.5 -7 l4 14 l2.5 -7 h4"
+        fill="none" stroke="#ffffff" stroke-width="2.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Handle -->
+  <line x1="37.5" y1="37.5" x2="49" y2="49" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"/>
+</svg>
