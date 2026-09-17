@@ -27,10 +27,9 @@
   <p class="sub">AITrace — Document Authenticity Analyzer · last updated 17 September 2026</p>
 
   <p><strong>Short version: your document never leaves your browser.</strong> There are
-  no accounts, no sign-in, no cookies, no analytics, and no tracking. Parsing and
-  AI-writing analysis run locally on your device. The only data that goes to any external
-  service is the short citation strings needed to verify references — never the document
-  itself.</p>
+  no accounts, no sign-in, no cookies, no analytics, and no tracking. Parsing, AI-writing
+  analysis and the optional deep-scan model all run locally on your device. Nothing you
+  provide is sent to any external service.</p>
 
   <h2>What happens to your document</h2>
   <ul>
@@ -47,12 +46,9 @@
 
   <h2>Network activity</h2>
   <ul>
-    <li><strong>Reference verification.</strong> To check citations, AITrace sends the extracted
-      <em>bibliography entries</em> — the citation line (up to ~350 characters per reference),
-      titles and DOIs, <strong>not the main document body</strong> — to two free, open scholarly
-      APIs: <strong>Crossref</strong> (<code>api.crossref.org</code>) and <strong>OpenAlex</strong>
-      (<code>api.openalex.org</code>). A contact email is included as a <code>mailto</code>
-      parameter so Crossref routes requests through its polite pool.</li>
+    <li><strong>Reference verification is currently disabled.</strong> This build focuses on the
+      AI-writing analysis, so no citation data is sent to any external scholarly API. (The code
+      for optional Crossref/OpenAlex verification remains in the project but is not run.)</li>
     <li><strong>Optional "deep scan".</strong> The analysis library, its runtime and the
       <code>distilgpt2</code> model are all served from this site itself — <strong>no CDN
       and no external model host</strong>. The text is scored entirely on your device and is

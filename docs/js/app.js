@@ -105,13 +105,8 @@ async function analyze(file) {
     setProgress('Analyzing writing style…');
     await new Promise((r) => setTimeout(r, 0)); // let the overlay paint before sync work
     const started = performance.now();
-    const report = await buildReport(doc, file.name, {
-      sensitivity,
-      onRefProgress: (done, total) => {
-        if (total > 0) setProgress('Verifying references…', `${done} of ${total} checked`, Math.round((done / total) * 100));
-        else setProgress('Analyzing writing style…');
-      },
-    });
+    // Report focuses on the AI-writing analysis only — skip reference verification.
+    const report = await buildReport(doc, file.name, { sensitivity, skipReferences: true });
     report.timings = { totalMs: Math.round(performance.now() - started) };
 
     currentReport = report;
@@ -181,13 +176,10 @@ function renderReport(r) {
       <h3 class="section-title">Executive Summary</h3>
       <div class="cards">
         ${card('AI writing signal', ai.overallSignal == null ? '—' : `${ai.overallSignal}/100`)}
+        ${card('Overall band', ai.overallBand)}
         ${card('Strong sections', num(s.strongSections))}
         ${card('Moderate sections', num(s.moderateSections))}
         ${card('Sections assessed', num(s.sectionsAssessed))}
-        ${card('References found', num(s.referencesDetected))}
-        ${card('Verified', num(s.referencesVerified))}
-        ${card('Partial', num(s.referencesPartial))}
-        ${card('Problem refs', num(s.referencesProblem))}
       </div>
     </section>
 
@@ -206,14 +198,8 @@ function renderReport(r) {
     </section>
 
     <section class="panel">
-      <h3 class="section-title">Reference Validation</h3>
-      ${renderRefs(r.references)}
-    </section>
-
-    <section class="panel">
       <h3 class="section-title">Methodology &amp; Limitations</h3>
       <p style="font-size:13.5px"><strong>AI detection.</strong> ${esc(r.methodology.aiDetection)}</p>
-      <p style="font-size:13.5px"><strong>Reference verification.</strong> ${esc(r.methodology.referenceVerification)}</p>
       <p style="font-size:13.5px;color:var(--muted)"><strong>Limitations.</strong> ${esc(r.methodology.limitations)}</p>
     </section>
 
@@ -226,11 +212,8 @@ function renderReport(r) {
   `;
 
   $('#print-btn').addEventListener('click', () => window.print());
-  $('#again-btn').addEventListener('click', () => {
-    hide(reportBox);
-    reportBox.innerHTML = '';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  // Hard reset: a full page reload clears all in-memory state in one click.
+  $('#again-btn').addEventListener('click', () => window.location.reload());
   const deepBtn = $('#deepscan-btn');
   if (deepBtn) deepBtn.addEventListener('click', runDeepScan);
 

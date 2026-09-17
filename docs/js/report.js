@@ -8,8 +8,17 @@ export async function buildReport(doc, filename, opts = {}) {
   const sensitivity = opts.sensitivity || 'high';
   const ai = analyzeAiSignal(doc.text, sensitivity);
 
-  const refEntries = extractReferences(doc.text);
-  const refs = await verifyReferences(refEntries, 4, opts.onRefProgress);
+  // Reference verification is optional; when skipped the report is AI-writing only
+  // and the analysis stays fully offline (no Crossref/OpenAlex calls).
+  let refs = {
+    total: 0,
+    counts: { verified: 0, partial: 0, not_found: 0, possible_hallucination: 0, doi_invalid: 0, error: 0 },
+    references: [],
+  };
+  if (!opts.skipReferences) {
+    const refEntries = extractReferences(doc.text);
+    refs = await verifyReferences(refEntries, 4, opts.onRefProgress);
+  }
 
   const flagged = ai.paragraphs
     .filter((p) => p.band === 'high' || p.band === 'moderate')
