@@ -2,12 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <!-- Content Security Policy: explicit allowlist. 'self' + the exact APIs/CDN we use.
+         cdn.jsdelivr.net + Hugging Face hosts are only needed for the optional deep-scan
+         model; the core app is same-origin. No inline scripts are allowed. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://api.crossref.org https://api.openalex.org https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co https://*.huggingface.co">
+    <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AITrace — Document Authenticity Analyzer</title>
-    <!-- Apply the unlocked state before paint so already-unlocked devices see no gate flash. -->
-    <script>
-      try { if (localStorage.getItem('aitrace.unlocked') === '1') document.documentElement.classList.add('unlocked'); } catch (e) {}
-    </script>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="favicon.svg" />
     <link rel="stylesheet" href="style.css" />

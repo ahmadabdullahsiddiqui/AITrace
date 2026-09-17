@@ -88,6 +88,24 @@ Deployed via GitHub Pages "Deploy from a branch" (`main` / `/docs`) — pushing 
 - Claim/fact verification against cited sources.
 - WebGPU acceleration + a larger model option for the perplexity signal.
 
+## Security
+
+Client-side hardening (all that a static, public GitHub Pages site can enforce):
+
+- **Content-Security-Policy** (meta) with an explicit source allowlist — no inline
+  scripts; script/connect/worker limited to `self` + the exact APIs/CDN used.
+- **Referrer-Policy: no-referrer**, output escaping on all rendered content, and
+  **URL sanitization** (only `http(s)` links) to prevent injection from document
+  text or API responses.
+- **Clickjacking frame-buster** (headers like `X-Frame-Options` can't be set on
+  Pages).
+- **Access gate** with PBKDF2 key-stretching, failed-attempt lockout, honeypot.
+
+> The access gate is a **deterrent, not real security**: the site is public and
+> the hash is readable, so an offline brute-force can't be prevented client-side.
+> For genuine access control, front the site with server-side auth (Cloudflare
+> Access, Netlify password, etc.).
+
 ## Limitations
 
 AI-writing detection is unreliable for hybrid and human-edited text and **must

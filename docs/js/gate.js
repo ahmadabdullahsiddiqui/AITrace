@@ -9,6 +9,24 @@
 // Verification: PBKDF2-SHA256(code, SALT, ITERATIONS) compared to a baked hash.
 // Only the derived hash is stored; the plaintext code is not.
 
+// Clickjacking defense: GitHub Pages can't send X-Frame-Options / frame-ancestors,
+// so break out of any frame that isn't us.
+if (window.top !== window.self) {
+  try {
+    window.top.location = window.location.href;
+  } catch {
+    document.documentElement.innerHTML = '';
+  }
+}
+
+// Restore the unlocked state as early as possible (replaces the old inline script,
+// so the CSP can forbid inline <script> entirely).
+try {
+  if (localStorage.getItem('aitrace.unlocked') === '1') document.documentElement.classList.add('unlocked');
+} catch {
+  /* ignore */
+}
+
 const CODE_HASH = 'a6969b97e2f7ca48df0479eb1bb0830b4eb363073905303088146e79aba3e243';
 const SALT = 'aitrace-gate-v1';
 const ITERATIONS = 500000;

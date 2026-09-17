@@ -91,6 +91,17 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 function bandClass(band) { return `band-${band || 'unknown'}`; }
+
+// Only allow http(s) links; blocks javascript:/data: hrefs from API-supplied URLs.
+function safeUrl(u) {
+  if (!u) return null;
+  try {
+    const parsed = new URL(u, 'https://doi.org');
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
 function num(n) { return n == null ? '—' : Number(n).toLocaleString(); }
 
 function meterClassFor(band) {
@@ -287,8 +298,9 @@ function renderRefs(refs) {
   const rows = refs.references
     .map((r, i) => {
       const m = r.match;
+      const url = m ? safeUrl(m.url) : null;
       const matchLine = m
-        ? `<div class="ref-match">Match (${esc(m.source)}, ${Math.round((m.titleSimilarity || 0) * 100)}% title): ${esc(m.title || '—')}${m.year ? ` (${m.year})` : ''}${m.url ? ` · <a href="${esc(m.url)}" target="_blank" rel="noopener">record</a>` : ''}</div>`
+        ? `<div class="ref-match">Match (${esc(m.source)}, ${Math.round((m.titleSimilarity || 0) * 100)}% title): ${esc(m.title || '—')}${m.year ? ` (${m.year})` : ''}${url ? ` · <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">record</a>` : ''}</div>`
         : '';
       return `
       <tr>
