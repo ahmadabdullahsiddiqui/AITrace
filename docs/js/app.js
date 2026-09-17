@@ -7,7 +7,7 @@ import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 
-export const APP_VERSION = '1.1.1';
+export const APP_VERSION = '1.1.2';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -75,17 +75,20 @@ function setProgress(text, sub, pct) {
 }
 
 // Show the loading overlay synchronously the instant a file is chosen, force a
-// reflow, then hand the heavy work to a fresh macrotask so the browser paints the
-// overlay FIRST. (Relying on requestAnimationFrame alone left the overlay lagging
-// several seconds behind on large files.)
+// reflow, then wait for a real paint (two rAFs) before starting heavy work.
 function analyze(file) {
   hide(errorBox);
   hide(reportBox);
   reportBox.innerHTML = '';
   setProgress(`Reading "${file.name}"…`);
   show(progress);
-  void progress.offsetHeight; // force layout so the overlay is painted this frame
-  setTimeout(() => runAnalysis(file), 0);
+  void progress.offsetHeight; // force layout now
+  // Two animation frames guarantee the overlay is actually PAINTED before we run
+  // any heavy (possibly main-thread-blocking) work. setTimeout can fire before a
+  // paint, which left the overlay invisible until parsing finished.
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => runAnalysis(file))
+  );
 }
 
 // Keep the loading window on screen for at least this long so it is always seen,
