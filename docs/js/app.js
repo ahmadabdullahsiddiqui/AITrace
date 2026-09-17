@@ -7,7 +7,7 @@ import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.1.1';
 
 const $ = (sel) => document.querySelector(sel);
 
