@@ -7,7 +7,13 @@ import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 
+export const APP_VERSION = '0.1.0';
+
 const $ = (sel) => document.querySelector(sel);
+
+// Stamp the version into the footer (single source of truth).
+const _verEl = document.getElementById('app-version');
+if (_verEl) _verEl.textContent = APP_VERSION;
 
 // Kept so the opt-in perplexity "deep scan" can re-score the same document.
 let currentReport = null;

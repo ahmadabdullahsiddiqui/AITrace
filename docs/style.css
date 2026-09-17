@@ -148,3 +148,6 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: upp
 
 footer { border-top: 1px solid var(--border); color: var(--muted); font-size: 12.5px; text-align: center; padding: 20px; }
 footer strong { color: var(--text); }
+.footer-meta { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.footer-meta a { color: var(--accent); text-decoration: none; }
+.footer-meta a:hover { text-decoration: underline; }
