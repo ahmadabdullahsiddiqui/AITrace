@@ -7,13 +7,27 @@ import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 
-export const APP_VERSION = '1.1.4';
+export const APP_VERSION = '1.1.5';
 
 const $ = (sel) => document.querySelector(sel);
 
 // Stamp the version into the footer (single source of truth).
 const _verEl = document.getElementById('app-version');
 if (_verEl) _verEl.textContent = APP_VERSION;
+
+// Service worker: network-first shell so users always get the latest code, plus
+// offline support. Auto-reload once when an updated worker takes over.
+if ('serviceWorker' in navigator) {
+  let _reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (_reloading) return;
+    _reloading = true;
+    window.location.reload();
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 
 // Kept so the opt-in perplexity "deep scan" can re-score the same document.
 let currentReport = null;
