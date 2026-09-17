@@ -188,20 +188,24 @@ async function verifyByDoi(doi) {
   return { source: null, record: null, doiInvalid: true };
 }
 
-// Search BOTH Crossref and OpenAlex for candidate records. We query with the
-// full reference string (Crossref's query.bibliographic is built for exactly
-// this) plus the guessed title, and pool all candidates. A real citation surfaces
-// a strong title match in at least one index; a fabricated one does not.
+// Minimum title similarity to treat a candidate as a confident match. Shared by
+// the search (to decide whether OpenAlex is needed) and the classifier.
+const STRONG_TITLE = 0.7;
+
+// Search Crossref first, and fall back to OpenAlex only when Crossref lacks a
+// confident title match. We query Crossref with the full reference string
+// (query.bibliographic is built for exactly this) plus the guessed title. A real,
+// well-indexed citation nails it in Crossref and skips the OpenAlex request; a
+// fabricated or obscure one triggers the second index for corroboration.
 async function searchBibliographic(entry) {
   const full = entry.slice(0, 350);
   const title = guessTitle(entry);
   const qFull = encodeURIComponent(full);
   const qTitle = encodeURIComponent(title);
 
-  const [crFull, crTitle, oa] = await Promise.all([
+  const [crFull, crTitle] = await Promise.all([
     fetchJson(`${CROSSREF}?query.bibliographic=${qFull}&rows=5&mailto=${CONTACT}`),
     fetchJson(`${CROSSREF}?query.bibliographic=${qTitle}&rows=5&mailto=${CONTACT}`),
-    fetchJson(`${OPENALEX}?search=${qTitle}&per_page=5&mailto=${CONTACT}`),
   ]);
 
   const candidates = [];
@@ -209,8 +213,16 @@ async function searchBibliographic(entry) {
     const items = (r.ok && r.data && r.data.message && r.data.message.items) || [];
     for (const m of items) candidates.push(normalizeCrossref(m));
   }
-  const oaItems = (oa.ok && oa.data && oa.data.results) || [];
-  for (const m of oaItems) candidates.push(normalizeOpenAlex(m));
+
+  let bestSim = 0;
+  for (const c of candidates) bestSim = Math.max(bestSim, titleSimilarity(title, c.title || ''));
+
+  // OpenAlex only when Crossref didn't already produce a confident match.
+  if (bestSim < STRONG_TITLE) {
+    const oa = await fetchJson(`${OPENALEX}?search=${qTitle}&per_page=5&mailto=${CONTACT}`);
+    const oaItems = (oa.ok && oa.data && oa.data.results) || [];
+    for (const m of oaItems) candidates.push(normalizeOpenAlex(m));
+  }
 
   return candidates;
 }
@@ -265,7 +277,7 @@ export async function verifyReference(entry) {
   const authorOk = authorMatches(claimedAuthor, best.authors); // true/false/null
   const yearOk =
     claimedYear && best.year ? Math.abs(claimedYear - best.year) <= 1 : null; // true/false/null
-  const strongTitle = bestSim >= 0.7;
+  const strongTitle = bestSim >= STRONG_TITLE;
 
   let status;
   let label;
