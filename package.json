@@ -1,6 +1,6 @@
 {
   "name": "aitrace",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "AITrace — evidence-based document authenticity analyzer (AI-writing signal + citation verification). Fully client-side, open source, no paid APIs. Deploys to GitHub Pages.",
   "type": "module",
   "scripts": {
