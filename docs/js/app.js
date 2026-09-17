@@ -7,7 +7,7 @@ import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 
-export const APP_VERSION = '1.1.2';
+export const APP_VERSION = '1.1.3';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -83,11 +83,10 @@ function analyze(file) {
   setProgress(`Reading "${file.name}"…`);
   show(progress);
   void progress.offsetHeight; // force layout now
-  // Two animation frames guarantee the overlay is actually PAINTED before we run
-  // any heavy (possibly main-thread-blocking) work. setTimeout can fire before a
-  // paint, which left the overlay invisible until parsing finished.
+  // Guarantee the overlay is actually PAINTED before any heavy (possibly
+  // main-thread-blocking) work: two animation frames, then a short timeout.
   requestAnimationFrame(() =>
-    requestAnimationFrame(() => runAnalysis(file))
+    requestAnimationFrame(() => setTimeout(() => runAnalysis(file), 120))
   );
 }
 
