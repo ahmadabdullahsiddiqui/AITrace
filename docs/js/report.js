@@ -9,7 +9,7 @@ export async function buildReport(doc, filename, opts = {}) {
   const ai = analyzeAiSignal(doc.text, sensitivity);
 
   const refEntries = extractReferences(doc.text);
-  const refs = await verifyReferences(refEntries);
+  const refs = await verifyReferences(refEntries, 4, opts.onRefProgress);
 
   const flagged = ai.paragraphs
     .filter((p) => p.band === 'high' || p.band === 'moderate')

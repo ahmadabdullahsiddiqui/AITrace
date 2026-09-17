@@ -318,9 +318,11 @@ export async function verifyReference(entry) {
   };
 }
 
-export async function verifyReferences(entries, concurrency = 4) {
+export async function verifyReferences(entries, concurrency = 4, onProgress) {
   const results = new Array(entries.length);
   let next = 0;
+  let done = 0;
+  if (onProgress) onProgress(0, entries.length);
   async function worker() {
     while (next < entries.length) {
       const i = next;
@@ -330,6 +332,8 @@ export async function verifyReferences(entries, concurrency = 4) {
       } catch (err) {
         results[i] = { entry: entries[i], status: 'error', label: String(err.message || err), match: null };
       }
+      done += 1;
+      if (onProgress) onProgress(done, entries.length);
     }
   }
   await Promise.all(Array.from({ length: Math.min(concurrency, entries.length || 1) }, worker));

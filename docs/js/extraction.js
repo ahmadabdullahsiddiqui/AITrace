@@ -21,12 +21,13 @@ function countWords(text) {
   return m ? m.length : 0;
 }
 
-async function extractPdf(arrayBuffer) {
+async function extractPdf(arrayBuffer, onProgress) {
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   let text = '';
 
   const pageLimit = Math.min(pdf.numPages, MAX_PDF_PAGES);
   for (let p = 1; p <= pageLimit; p += 1) {
+    if (onProgress) onProgress({ phase: 'extract', page: p, pages: pageLimit });
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
     let lastY = null;
@@ -91,7 +92,7 @@ function extractTxt(arrayBuffer) {
  * Extract text + metadata from a browser File object.
  * @param {File} file
  */
-export async function extractDocument(file) {
+export async function extractDocument(file, onProgress) {
   const name = file.name || 'document';
   if (file.size > MAX_FILE_BYTES) {
     throw new Error(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is ${MAX_FILE_BYTES / 1024 / 1024} MB.`);
@@ -101,7 +102,7 @@ export async function extractDocument(file) {
 
   let result;
   if (ext === 'pdf' || file.type === 'application/pdf') {
-    result = await extractPdf(buffer);
+    result = await extractPdf(buffer, onProgress);
   } else if (
     ext === 'docx' ||
     file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'

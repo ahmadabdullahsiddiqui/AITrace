@@ -55,6 +55,24 @@ dropzone.addEventListener('drop', (e) => {
 function show(el) { el.classList.remove('hidden'); }
 function hide(el) { el.classList.add('hidden'); }
 
+// Update the loading overlay: main text, optional sub-line, optional % (0-100).
+// Passing no percentage hides the determinate bar (indeterminate spinner only).
+function setProgress(text, sub, pct) {
+  if (progressText) progressText.textContent = text;
+  const subEl = document.getElementById('progress-sub');
+  const bar = document.getElementById('progress-bar');
+  const fill = document.getElementById('progress-fill');
+  if (subEl) subEl.textContent = sub || '';
+  if (bar && fill) {
+    if (pct == null) {
+      bar.classList.add('hidden');
+    } else {
+      bar.classList.remove('hidden');
+      fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    }
+  }
+}
+
 async function analyze(file) {
   hide(errorBox);
   hide(reportBox);
@@ -62,8 +80,12 @@ async function analyze(file) {
   show(progress);
 
   try {
-    progressText.textContent = `Reading "${file.name}"…`;
-    const doc = await extractDocument(file);
+    setProgress(`Reading "${file.name}"…`);
+    const doc = await extractDocument(file, (p) => {
+      if (p && p.phase === 'extract' && p.pages > 1) {
+        setProgress('Extracting text…', `Page ${p.page} of ${p.pages}`, Math.round((p.page / p.pages) * 100));
+      }
+    });
 
     if (!doc.text || doc.text.trim().length < 40) {
       throw new Error('Could not extract enough text (the file may be scanned/image-only).');
@@ -71,9 +93,16 @@ async function analyze(file) {
 
     const sensEl = $('#sensitivity');
     const sensitivity = (sensEl && sensEl.value) || 'high';
-    progressText.textContent = 'Analyzing writing style & verifying references…';
+    setProgress('Analyzing writing style…');
+    await new Promise((r) => setTimeout(r, 0)); // let the overlay paint before sync work
     const started = performance.now();
-    const report = await buildReport(doc, file.name, { sensitivity });
+    const report = await buildReport(doc, file.name, {
+      sensitivity,
+      onRefProgress: (done, total) => {
+        if (total > 0) setProgress('Verifying references…', `${done} of ${total} checked`, Math.round((done / total) * 100));
+        else setProgress('Analyzing writing style…');
+      },
+    });
     report.timings = { totalMs: Math.round(performance.now() - started) };
 
     currentReport = report;

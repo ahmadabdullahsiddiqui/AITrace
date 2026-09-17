@@ -65,10 +65,15 @@
         </p>
       </section>
 
-      <section id="progress" class="panel hidden">
-        <div class="spinner"></div>
-        <p id="progress-text">Analyzing document…</p>
-      </section>
+      <div id="progress" class="overlay hidden" role="status" aria-live="polite">
+        <div class="loader-card">
+          <div class="spinner"></div>
+          <p id="progress-text">Analyzing document…</p>
+          <div id="progress-bar" class="progress-bar hidden"><div id="progress-fill"></div></div>
+          <p id="progress-sub" class="progress-sub"></p>
+          <p class="loader-hint">This runs entirely in your browser — large files may take a moment.</p>
+        </div>
+      </div>
 
       <section id="error" class="panel error hidden"></section>
 
