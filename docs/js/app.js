@@ -73,14 +73,23 @@ function setProgress(text, sub, pct) {
   }
 }
 
+// Yield to the browser so a just-shown DOM change actually paints before we
+// start heavy work (worker setup, extraction). Two rAFs guarantee a paint frame.
+function nextPaint() {
+  return new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+  );
+}
+
 async function analyze(file) {
   hide(errorBox);
   hide(reportBox);
   reportBox.innerHTML = '';
+  setProgress(`Reading "${file.name}"…`);
   show(progress);
+  await nextPaint(); // ensure the loading overlay is visible immediately
 
   try {
-    setProgress(`Reading "${file.name}"…`);
     const doc = await extractDocument(file, (p) => {
       if (p && p.phase === 'extract' && p.pages > 1) {
         setProgress('Extracting text…', `Page ${p.page} of ${p.pages}`, Math.round((p.page / p.pages) * 100));
