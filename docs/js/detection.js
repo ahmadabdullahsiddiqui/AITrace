@@ -51,7 +51,7 @@ function splitSentences(text) {
     .filter((s) => s.length > 0);
 }
 
-function splitParagraphs(text) {
+export function splitParagraphs(text) {
   return text
     .split(/\n\s*\n+/)
     .map((p) => p.replace(/\s+/g, ' ').trim())

@@ -5,8 +5,13 @@
 
 import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
+import * as ppl from './perplexity.js';
 
 const $ = (sel) => document.querySelector(sel);
+
+// Kept so the opt-in perplexity "deep scan" can re-score the same document.
+let currentReport = null;
+let currentDocText = '';
 
 const dropzone = $('#dropzone');
 const fileInput = $('#file-input');
@@ -65,6 +70,8 @@ async function analyze(file) {
     const report = await buildReport(doc, file.name, { sensitivity });
     report.timings = { totalMs: Math.round(performance.now() - started) };
 
+    currentReport = report;
+    currentDocText = doc.text;
     hide(progress);
     renderReport(report);
   } catch (err) {
@@ -80,11 +87,25 @@ function esc(s) {
 function bandClass(band) { return `band-${band || 'unknown'}`; }
 function num(n) { return n == null ? '—' : Number(n).toLocaleString(); }
 
+function meterClassFor(band) {
+  return band === 'high' ? 'meter-fill-high' : band === 'moderate' ? 'meter-fill-moderate' : 'meter-fill-low';
+}
+
 function renderReport(r) {
   const s = r.summary;
   const ai = r.aiAnalysis;
-  const meterClass =
-    ai.overallBand === 'high' ? 'meter-fill-high' : ai.overallBand === 'moderate' ? 'meter-fill-moderate' : 'meter-fill-low';
+  const meterClass = meterClassFor(ai.overallBand);
+
+  // Attach perplexity results (if the deep scan has run) to each flagged section.
+  const pplRes = r.perplexity || null;
+  if (pplRes) {
+    for (const p of ai.flaggedParagraphs) p.ppl = pplRes.byIndex[p.index] || null;
+  }
+  const combined =
+    pplRes && ai.overallSignal != null && pplRes.overallSignal != null
+      ? Math.round((ai.overallSignal + pplRes.overallSignal) / 2)
+      : null;
+  const combinedBand = combined == null ? 'unknown' : combined >= 65 ? 'high' : combined >= 40 ? 'moderate' : 'low';
 
   reportBox.innerHTML = `
     <section class="panel">
@@ -124,6 +145,7 @@ function renderReport(r) {
         across ${num(ai.counts.assessed)} assessed sections (method: ${esc(ai.method)} · sensitivity: ${esc(ai.sensitivityLabel || ai.sensitivity || '—')}).
       </p>
       <div class="disclaimer">⚠ ${esc(ai.disclaimer)}</div>
+      ${deepScanBlock(pplRes, combined, combinedBand)}
       <h4 style="margin:20px 0 10px;font-size:14px">Flagged sections (${ai.flaggedParagraphs.length})</h4>
       ${ai.flaggedParagraphs.length ? ai.flaggedParagraphs.map(paraCard).join('') : '<p style="color:var(--muted)">No sections reached the moderate/high threshold.</p>'}
     </section>
@@ -154,9 +176,78 @@ function renderReport(r) {
     reportBox.innerHTML = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+  const deepBtn = $('#deepscan-btn');
+  if (deepBtn) deepBtn.addEventListener('click', runDeepScan);
 
   show(reportBox);
   reportBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Opt-in second signal: load distilgpt2 in-browser and score each assessed
+// section by perplexity, then re-render with a combined signal.
+async function runDeepScan() {
+  const btn = $('#deepscan-btn');
+  const statusEl = $('#deepscan-status');
+  if (!currentReport || !btn) return;
+  btn.disabled = true;
+  const setStatus = (t) => { if (statusEl) statusEl.textContent = t; };
+
+  try {
+    if (!ppl.isReady()) {
+      setStatus('Loading language model (one-time download)…');
+      await ppl.loadModel((e) => {
+        if (e && e.status === 'progress' && e.total) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setStatus(`Downloading model: ${pct}% (${(e.file || '').split('/').pop() || ''})`);
+        }
+      });
+    }
+    const indices = currentReport.aiAnalysis.allParagraphs.filter((p) => p.signal != null).map((p) => p.index);
+    setStatus(`Scoring ${indices.length} sections with the model…`);
+    const result = await ppl.analyzePerplexity(currentDocText, indices, (done, total) => {
+      setStatus(`Scoring sections with the model… ${done}/${total}`);
+    });
+    currentReport.perplexity = result;
+    renderReport(currentReport);
+  } catch (err) {
+    setStatus(`Deep scan failed: ${err.message || err}`);
+    btn.disabled = false;
+  }
+}
+
+function deepScanBlock(pplRes, combined, combinedBand) {
+  if (!pplRes) {
+    return `
+      <div class="deepscan">
+        <div>
+          <strong>🧠 Deep scan (perplexity model)</strong>
+          <p class="deepscan-note">Optional second signal: runs distilgpt2 in your browser to measure how
+          predictable the text is. First run downloads the model (~tens of MB, then cached). Nothing is uploaded.</p>
+        </div>
+        <div class="deepscan-action">
+          <button class="btn" id="deepscan-btn">Run deep scan</button>
+          <span id="deepscan-status" class="deepscan-status"></span>
+        </div>
+      </div>`;
+  }
+  const mc = meterClassFor(pplRes.overallBand);
+  const cc = meterClassFor(combinedBand);
+  return `
+    <div class="deepscan done">
+      <div class="deepscan-signals">
+        <div class="ds-sig">
+          <div class="ds-label">Perplexity signal <span class="band-pill ${bandClass(pplRes.overallBand)}">${pplRes.overallBand}</span></div>
+          <div class="meter"><div class="${mc}" style="width:${pplRes.overallSignal || 0}%"></div></div>
+          <div class="meter-label"><span>${pplRes.overallSignal == null ? 'n/a' : pplRes.overallSignal + '/100'}</span><span>${esc(pplRes.model)}</span></div>
+        </div>
+        <div class="ds-sig">
+          <div class="ds-label">Combined signal <span class="band-pill ${bandClass(combinedBand)}">${combinedBand}</span></div>
+          <div class="meter"><div class="${cc}" style="width:${combined || 0}%"></div></div>
+          <div class="meter-label"><span>${combined == null ? 'n/a' : combined + '/100'}</span><span>heuristic + perplexity</span></div>
+        </div>
+      </div>
+      <div class="disclaimer">⚠ ${esc(pplRes.disclaimer)}</div>
+    </div>`;
 }
 
 function card(k, v) {
@@ -164,13 +255,18 @@ function card(k, v) {
 }
 
 function paraCard(p) {
+  const pp = p.ppl && p.ppl.signal != null ? p.ppl : null;
+  const pplLine = pp
+    ? `<div class="para-ppl">Perplexity: <strong>${pp.perplexity}</strong> · signal <span class="band-pill ${bandClass(pp.band)}">${pp.signal}/100</span> · ${pp.tokens} tokens</div>`
+    : '';
   return `
     <div class="para ${p.band}">
       <div class="para-head">
         <span class="sig">Section ${p.index + 1} · <span class="band-pill ${bandClass(p.band)}">${p.band}</span></span>
-        <span class="sig">${p.signal}/100</span>
+        <span class="sig">heuristic ${p.signal}/100</span>
       </div>
       <p class="para-text">${esc(p.preview)}</p>
+      ${pplLine}
       ${p.reasons && p.reasons.length ? `<ul class="reasons">${p.reasons.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
     </div>`;
 }

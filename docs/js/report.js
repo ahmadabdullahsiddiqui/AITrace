@@ -51,8 +51,10 @@ export async function buildReport(doc, filename, opts = {}) {
     methodology: {
       aiDetection:
         'Local stylometric heuristics (sentence-length burstiness, lexical diversity, ' +
-        'AI-associated phrasing density, punctuation variety, opener repetition). No text ' +
-        'is sent to any third-party AI detector. This is probabilistic evidence, not proof.',
+        'AI-associated phrasing density, punctuation variety, opener repetition). An optional ' +
+        '"deep scan" adds a second signal by running a small language model (distilgpt2) in your ' +
+        'browser and measuring per-section perplexity. No text is sent to any third-party AI ' +
+        'detector. Both signals are probabilistic evidence, not proof.',
       referenceVerification:
         'Each reference is matched against both Crossref and OpenAlex (free, open scholarly APIs) ' +
         'using the DOI when present, otherwise a full-reference and title search across both indexes. ' +

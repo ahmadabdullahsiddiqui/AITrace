@@ -66,19 +66,27 @@ docs/                     the deployed static site (GitHub Pages root)
     extraction.js  PDF (pdf.js) / DOCX (mammoth) / TXT -> text + metadata
     detection.js   AI-writing heuristic engine (swap in a model here)
     references.js  citation extraction + Crossref/OpenAlex verification
+    perplexity.js  optional in-browser LM (distilgpt2) perplexity signal
     report.js      assembles the final report object
   vendor/          pdf.js + mammoth, bundled locally (no CDN)
-.github/workflows/pages.yml   push-to-deploy to GitHub Pages
-preview.mjs                    local static server (no dependencies)
+preview.mjs        local static server (no dependencies)
 ```
+
+Deployed via GitHub Pages "Deploy from a branch" (`main` / `/docs`) — pushing to
+`main` auto-publishes.
+
+## AI-writing signals
+
+1. **Heuristic (default, instant, offline)** — stylometric features, always on.
+2. **Perplexity deep scan (optional)** — click *Run deep scan* to load distilgpt2
+   in the browser (via transformers.js) and score each section by perplexity. The
+   library + model are fetched on demand and cached; the document is never
+   uploaded. A combined signal is shown alongside the two.
 
 ## Roadmap (next slices)
 
-- Detector-threshold tuning so clearly fabricated (no-DOI) citations classify as
-  *possible hallucination* rather than *partial*.
-- Perplexity-based detector running in-browser (e.g. a small ONNX/WebGPU model)
-  as a second, pluggable signal alongside the heuristics.
 - Claim/fact verification against cited sources.
+- WebGPU acceleration + a larger model option for the perplexity signal.
 
 ## Limitations
 
