@@ -22,6 +22,7 @@ let currentDocText = '';
 const dropzone = $('#dropzone');
 const fileInput = $('#file-input');
 const browseBtn = $('#browse-btn');
+const uploadPanel = $('#upload-panel');
 const progress = $('#progress');
 const progressText = $('#progress-text');
 const errorBox = $('#error');
@@ -216,8 +217,9 @@ function renderReport(r) {
   const deepBtn = $('#deepscan-btn');
   if (deepBtn) deepBtn.addEventListener('click', runDeepScan);
 
+  if (uploadPanel) hide(uploadPanel); // report stands alone; upload returns on reset
   show(reportBox);
-  reportBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 // Opt-in second signal: load distilgpt2 in-browser and score each assessed
