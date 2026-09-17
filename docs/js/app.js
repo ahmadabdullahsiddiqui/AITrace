@@ -7,7 +7,7 @@ import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 
-export const APP_VERSION = '1.1.3';
+export const APP_VERSION = '1.1.4';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -80,7 +80,7 @@ function analyze(file) {
   hide(errorBox);
   hide(reportBox);
   reportBox.innerHTML = '';
-  setProgress(`Reading "${file.name}"…`);
+  setProgress('Analysing your document…');
   show(progress);
   void progress.offsetHeight; // force layout now
   // Guarantee the overlay is actually PAINTED before any heavy (possibly
@@ -103,7 +103,7 @@ async function runAnalysis(file) {
   try {
     const doc = await extractDocument(file, (p) => {
       if (p && p.phase === 'extract' && p.pages > 1) {
-        setProgress('Extracting text…', `Page ${p.page} of ${p.pages}`, Math.round((p.page / p.pages) * 100));
+        setProgress('Analysing your document…', `Reading page ${p.page} of ${p.pages}`, Math.round((p.page / p.pages) * 100));
       }
     });
 
@@ -113,7 +113,7 @@ async function runAnalysis(file) {
 
     const sensEl = $('#sensitivity');
     const sensitivity = (sensEl && sensEl.value) || 'high';
-    setProgress('Analyzing writing style…');
+    setProgress('Analysing writing style…');
     await new Promise((r) => setTimeout(r, 0)); // let the overlay paint before sync work
     const started = performance.now();
     // Report focuses on the AI-writing analysis only — skip reference verification.
