@@ -25,8 +25,8 @@ any device, no install.
 | Concern | Choice |
 | --- | --- |
 | Hosting | GitHub Pages (static — no backend) |
-| PDF parsing | `pdf.js` (loaded from jsDelivr CDN) |
-| DOCX parsing | `mammoth` browser build (jsDelivr CDN) |
+| PDF parsing | `pdf.js` (vendored in `docs/vendor/`, no CDN) |
+| DOCX parsing | `mammoth` browser build (vendored in `docs/vendor/`, no CDN) |
 | Reference data | Crossref + OpenAlex (free, no key, CORS-enabled) |
 | AI signal | local heuristic engine (pluggable) |
 | Frontend | static HTML/CSS/JS ES modules — no build step |
@@ -67,6 +67,7 @@ docs/                     the deployed static site (GitHub Pages root)
     detection.js   AI-writing heuristic engine (swap in a model here)
     references.js  citation extraction + Crossref/OpenAlex verification
     report.js      assembles the final report object
+  vendor/          pdf.js + mammoth, bundled locally (no CDN)
 .github/workflows/pages.yml   push-to-deploy to GitHub Pages
 preview.mjs                    local static server (no dependencies)
 ```
@@ -78,7 +79,6 @@ preview.mjs                    local static server (no dependencies)
 - Perplexity-based detector running in-browser (e.g. a small ONNX/WebGPU model)
   as a second, pluggable signal alongside the heuristics.
 - Claim/fact verification against cited sources.
-- Vendor pdf.js/mammoth into `docs/vendor/` to remove the CDN dependency.
 
 ## Limitations
 

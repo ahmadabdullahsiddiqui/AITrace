@@ -1,14 +1,16 @@
 // extraction.js (browser) — turn an uploaded File into { text, metadata, pages,
 // words, characters } entirely client-side. Nothing is uploaded anywhere.
 //
-// PDF  -> pdf.js (Apache-2.0), loaded as an ES module from jsDelivr
-// DOCX -> mammoth browser build (BSD), loaded as a UMD global in index.html
+// PDF  -> pdf.js (Apache-2.0), vendored locally in docs/vendor/
+// DOCX -> mammoth browser build (BSD), vendored locally, loaded as a UMD global
 // TXT  -> read directly
+// No external CDN is used — the app is fully self-contained.
 
-import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs';
+import * as pdfjsLib from '../vendor/pdf.min.mjs';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs';
+// Resolve the worker relative to THIS module so it works under any base path
+// (e.g. the /AITrace/ project-page sub-path on GitHub Pages).
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdf.worker.min.mjs', import.meta.url).href;
 
 function countWords(text) {
   const m = text.trim().match(/\S+/g);
