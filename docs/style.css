@@ -93,7 +93,13 @@ main { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
   background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
   border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; cursor: pointer;
 }
-.privacy-note { color: var(--muted); font-size: 12.5px; margin: 16px 0 0; }
+.privacy-note {
+  color: var(--text); font-size: 13px; font-weight: 600; margin: 16px 0 0;
+  background: rgba(53, 201, 138, 0.08); border: 1px solid rgba(53, 201, 138, 0.35);
+  border-radius: 10px; padding: 12px 14px; line-height: 1.5;
+}
+.privacy-note strong { font-weight: 800; }
+.privacy-strong { color: var(--low); letter-spacing: 0.3px; }
 
 /* Progress — full-screen loading overlay */
 .spinner {
