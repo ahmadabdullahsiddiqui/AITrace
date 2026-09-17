@@ -99,7 +99,19 @@ Client-side hardening (all that a static, public GitHub Pages site can enforce):
   text or API responses.
 - **Clickjacking frame-buster** (headers like `X-Frame-Options` can't be set on
   Pages).
+- **Resource limits** — 50 MB max upload, 1000-page PDF cap — so a huge file can't
+  freeze the tab. Recursion errors from malformed input are caught, not fatal.
 - **Access gate** with PBKDF2 key-stretching, failed-attempt lockout, honeypot.
+
+**Known residual items** (documented, low real-world impact in this context):
+
+- The vendored Mammoth DOCX bundle ships Underscore 1.13.1 / JSZip — versions that
+  carry advisories upstream. Mammoth bundles these itself and its latest release
+  hasn't updated them, so they can't be patched without rebuilding Mammoth. In the
+  browser (no filesystem, single user) the practical impact is at most a
+  self-inflicted tab slowdown on a crafted DOCX, which our error handling contains.
+- The optional deep scan executes transformers.js fetched from a CDN. For
+  confidential documents, self-host it (see roadmap) or simply don't run the scan.
 
 > The access gate is a **deterrent, not real security**: the site is public and
 > the hash is readable, so an offline brute-force can't be prevented client-side.

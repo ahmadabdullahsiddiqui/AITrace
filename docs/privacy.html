@@ -47,11 +47,12 @@
 
   <h2>Network activity</h2>
   <ul>
-    <li><strong>Reference verification.</strong> To check citations, AITrace sends only the
-      extracted citation <em>titles and DOIs</em> — not your document — to two free, open
-      scholarly APIs: <strong>Crossref</strong> (<code>api.crossref.org</code>) and
-      <strong>OpenAlex</strong> (<code>api.openalex.org</code>). A contact email is included
-      as a <code>mailto</code> parameter so Crossref routes requests through its polite pool.</li>
+    <li><strong>Reference verification.</strong> To check citations, AITrace sends the extracted
+      <em>bibliography entries</em> — the citation line (up to ~350 characters per reference),
+      titles and DOIs, <strong>not the main document body</strong> — to two free, open scholarly
+      APIs: <strong>Crossref</strong> (<code>api.crossref.org</code>) and <strong>OpenAlex</strong>
+      (<code>api.openalex.org</code>). A contact email is included as a <code>mailto</code>
+      parameter so Crossref routes requests through its polite pool.</li>
     <li><strong>Optional "deep scan".</strong> If you choose to run the perplexity model,
       the transformers.js library is fetched from the <strong>jsDelivr</strong> CDN and the
       <code>distilgpt2</code> model from the <strong>Hugging Face Hub</strong>, then cached

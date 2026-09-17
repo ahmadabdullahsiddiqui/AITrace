@@ -12,6 +12,10 @@ import * as pdfjsLib from '../vendor/pdf.min.mjs';
 // (e.g. the /AITrace/ project-page sub-path on GitHub Pages).
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdf.worker.min.mjs', import.meta.url).href;
 
+// Resource limits — a very large upload could otherwise freeze the browser tab.
+const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_PDF_PAGES = 1000;
+
 function countWords(text) {
   const m = text.trim().match(/\S+/g);
   return m ? m.length : 0;
@@ -21,7 +25,8 @@ async function extractPdf(arrayBuffer) {
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   let text = '';
 
-  for (let p = 1; p <= pdf.numPages; p += 1) {
+  const pageLimit = Math.min(pdf.numPages, MAX_PDF_PAGES);
+  for (let p = 1; p <= pageLimit; p += 1) {
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
     let lastY = null;
@@ -88,6 +93,9 @@ function extractTxt(arrayBuffer) {
  */
 export async function extractDocument(file) {
   const name = file.name || 'document';
+  if (file.size > MAX_FILE_BYTES) {
+    throw new Error(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is ${MAX_FILE_BYTES / 1024 / 1024} MB.`);
+  }
   const ext = (name.split('.').pop() || '').toLowerCase();
   const buffer = await file.arrayBuffer();
 
