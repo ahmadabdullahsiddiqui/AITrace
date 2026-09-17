@@ -20,6 +20,8 @@
         <img src="favicon.svg" width="52" height="52" alt="" />
         <h2>AITrace</h2>
         <p>Enter access code</p>
+        <!-- Honeypot: hidden from users; bots that autofill it are rejected. -->
+        <input id="gate-hp" class="gate-hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <input id="gate-input" inputmode="numeric" pattern="[0-9]*" maxlength="8"
                autocomplete="off" aria-label="Access code" placeholder="••••••••" />
         <button type="submit" class="btn">Unlock</button>

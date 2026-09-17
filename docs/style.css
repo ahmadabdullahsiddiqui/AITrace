@@ -49,6 +49,7 @@ body {
 #gate-input:focus { outline: none; border-color: var(--accent); }
 #gate-form .btn { width: 100%; }
 .gate-error { color: var(--high); min-height: 18px; margin: 10px 0 0; font-size: 13px; }
+.gate-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
 .topbar {
   padding: 22px 28px;
