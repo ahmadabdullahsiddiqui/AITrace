@@ -21,7 +21,9 @@ import { splitParagraphs } from './detection.js';
 // docs/vendor/transformers/ (no CDN). Resolved relative to THIS module so it works
 // under the /AITrace/ project-page sub-path. Only the model weights are still
 // fetched from the Hugging Face Hub (data, not executed code).
-const TRANSFORMERS_URL = new URL('../vendor/transformers/transformers.min.mjs', import.meta.url).href;
+// Browser build (dist/transformers.min.js) — Node builtins (fs/path/onnxruntime-node)
+// are stubbed out in this build; the .mjs is the Node build and must NOT be used here.
+const TRANSFORMERS_URL = new URL('../vendor/transformers/transformers.min.js', import.meta.url).href;
 const WASM_PATH = new URL('../vendor/transformers/', import.meta.url).href;
 const MODEL_ID = 'Xenova/distilgpt2';
 const MAX_TOKENS = 256; // truncate long paragraphs to keep inference bounded
