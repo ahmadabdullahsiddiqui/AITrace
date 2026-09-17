@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <!-- Content Security Policy: explicit allowlist. 'self' + the exact APIs/CDN we use.
-         cdn.jsdelivr.net + Hugging Face hosts are only needed for the optional deep-scan
-         model; the core app is same-origin. No inline scripts are allowed. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://api.crossref.org https://api.openalex.org https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co https://*.huggingface.co">
+    <!-- Content Security Policy: explicit allowlist. All scripts/WASM are same-origin
+         (no CDN). Hugging Face hosts are only needed to download the optional deep-scan
+         model weights (data). No inline scripts are allowed. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://api.crossref.org https://api.openalex.org https://huggingface.co https://*.hf.co https://*.huggingface.co">
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AITrace — Document Authenticity Analyzer</title>

@@ -53,11 +53,12 @@
       APIs: <strong>Crossref</strong> (<code>api.crossref.org</code>) and <strong>OpenAlex</strong>
       (<code>api.openalex.org</code>). A contact email is included as a <code>mailto</code>
       parameter so Crossref routes requests through its polite pool.</li>
-    <li><strong>Optional "deep scan".</strong> If you choose to run the perplexity model,
-      the transformers.js library is fetched from the <strong>jsDelivr</strong> CDN and the
-      <code>distilgpt2</code> model from the <strong>Hugging Face Hub</strong>, then cached
-      by your browser. The text is scored on your device; it is <strong>not uploaded</strong>.
-      If you never click "Run deep scan", none of this is requested.</li>
+    <li><strong>Optional "deep scan".</strong> The analysis library and its runtime are
+      served from this site itself (no CDN). If you choose to run the perplexity model, only
+      the <code>distilgpt2</code> model weights are downloaded from the
+      <strong>Hugging Face Hub</strong> and cached by your browser. The text is scored on
+      your device; it is <strong>not uploaded</strong>. If you never click "Run deep scan",
+      nothing is requested.</li>
     <li><strong>Host logs.</strong> As with any website, the static host
       (<strong>GitHub Pages</strong>) receives the ordinary HTTP request needed to deliver
       the page, which may include your IP address and browser type in the host's standard

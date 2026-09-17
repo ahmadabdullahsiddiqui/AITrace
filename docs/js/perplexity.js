@@ -17,7 +17,12 @@
 
 import { splitParagraphs } from './detection.js';
 
-const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
+// Self-hosted: the library and the ONNX runtime WASM are vendored in
+// docs/vendor/transformers/ (no CDN). Resolved relative to THIS module so it works
+// under the /AITrace/ project-page sub-path. Only the model weights are still
+// fetched from the Hugging Face Hub (data, not executed code).
+const TRANSFORMERS_URL = new URL('../vendor/transformers/transformers.min.mjs', import.meta.url).href;
+const WASM_PATH = new URL('../vendor/transformers/', import.meta.url).href;
 const MODEL_ID = 'Xenova/distilgpt2';
 const MAX_TOKENS = 256; // truncate long paragraphs to keep inference bounded
 
@@ -40,8 +45,14 @@ export async function loadModel(onProgress) {
   _loading = (async () => {
     const tx = await import(/* @vite-ignore */ TRANSFORMERS_URL);
     const { AutoTokenizer, AutoModelForCausalLM, env } = tx;
-    // Always fetch from the Hub; we are not bundling local model files.
-    if (env) env.allowLocalModels = false;
+    if (env) {
+      env.allowLocalModels = false; // model weights still come from the HF Hub
+      // Load the ONNX runtime WASM from our own origin, not a CDN.
+      if (env.backends && env.backends.onnx && env.backends.onnx.wasm) {
+        env.backends.onnx.wasm.wasmPaths = WASM_PATH;
+        env.backends.onnx.wasm.numThreads = 1; // no cross-origin isolation on Pages
+      }
+    }
 
     _tokenizer = await AutoTokenizer.from_pretrained(MODEL_ID);
     try {

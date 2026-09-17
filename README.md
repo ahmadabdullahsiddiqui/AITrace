@@ -110,8 +110,9 @@ Client-side hardening (all that a static, public GitHub Pages site can enforce):
   hasn't updated them, so they can't be patched without rebuilding Mammoth. In the
   browser (no filesystem, single user) the practical impact is at most a
   self-inflicted tab slowdown on a crafted DOCX, which our error handling contains.
-- The optional deep scan executes transformers.js fetched from a CDN. For
-  confidential documents, self-host it (see roadmap) or simply don't run the scan.
+- The optional deep scan's library and ONNX runtime are **self-hosted** (no CDN);
+  only the model *weights* (data) are fetched from the Hugging Face Hub. To be fully
+  offline, vendor the model too (~80 MB) — see roadmap.
 
 > The access gate is a **deterrent, not real security**: the site is public and
 > the hash is readable, so an offline brute-force can't be prevented client-side.
