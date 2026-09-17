@@ -95,6 +95,49 @@ function guessTitle(entry) {
   return parts[0] || entry.slice(0, 120);
 }
 
+// Extract the first-author surname, used to corroborate a title match. Handles
+// "Surname, I." / "Surname I" / "I. Surname" leading patterns.
+function guessAuthor(entry) {
+  const head = entry.slice(0, 60);
+  let m = head.match(/^\s*([A-Z][A-Za-z'’-]{1,})\s*,/); // "Smith, J."
+  if (m) return m[1];
+  m = head.match(/^\s*(?:[A-Z]\.\s*)+([A-Z][A-Za-z'’-]{1,})/); // "J. Smith"
+  if (m) return m[1];
+  m = head.match(/^\s*([A-Z][A-Za-z'’-]{2,})\s+[A-Z]/); // "Smith J"
+  if (m) return m[1];
+  return null;
+}
+
+function authorMatches(surname, authors) {
+  if (!surname || !authors || !authors.length) return null; // unknown
+  const s = surname.toLowerCase();
+  return authors.some((a) => (a || '').toLowerCase().includes(s));
+}
+
+function normalizeCrossref(m) {
+  return {
+    source: 'crossref',
+    title: (m.title && m.title[0]) || null,
+    authors: (m.author || []).map((a) => [a.given, a.family].filter(Boolean).join(' ')).slice(0, 8),
+    year: (m.issued && m.issued['date-parts'] && m.issued['date-parts'][0][0]) || null,
+    container: (m['container-title'] && m['container-title'][0]) || null,
+    doi: m.DOI || null,
+    url: m.URL || (m.DOI ? `https://doi.org/${m.DOI}` : null),
+  };
+}
+
+function normalizeOpenAlex(m) {
+  return {
+    source: 'openalex',
+    title: m.title || m.display_name || null,
+    authors: (m.authorships || []).map((a) => a.author && a.author.display_name).filter(Boolean).slice(0, 8),
+    year: m.publication_year || null,
+    container: (m.primary_location && m.primary_location.source && m.primary_location.source.display_name) || null,
+    doi: m.doi ? m.doi.replace(/^https?:\/\/doi\.org\//, '') : null,
+    url: (m.doi || (m.primary_location && m.primary_location.landing_page_url)) || null,
+  };
+}
+
 async function fetchJson(url, timeoutMs = 12000) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -145,101 +188,121 @@ async function verifyByDoi(doi) {
   return { source: null, record: null, doiInvalid: true };
 }
 
-async function verifyByBibliographic(entry) {
+// Search BOTH Crossref and OpenAlex for candidate records. We query with the
+// full reference string (Crossref's query.bibliographic is built for exactly
+// this) plus the guessed title, and pool all candidates. A real citation surfaces
+// a strong title match in at least one index; a fabricated one does not.
+async function searchBibliographic(entry) {
+  const full = entry.slice(0, 350);
   const title = guessTitle(entry);
-  const q = encodeURIComponent(title);
-  const cr = await fetchJson(`${CROSSREF}?query.bibliographic=${q}&rows=5&mailto=${CONTACT}`);
-  const items = (cr.ok && cr.data && cr.data.message && cr.data.message.items) || [];
-  if (items.length) {
-    let best = null;
-    let bestSim = -1;
-    for (const m of items) {
-      const t = (m.title && m.title[0]) || '';
-      const sim = titleSimilarity(title, t);
-      if (sim > bestSim) {
-        bestSim = sim;
-        best = m;
-      }
-    }
-    const m = best || items[0];
-    return {
-      source: 'crossref',
-      record: {
-        title: (m.title && m.title[0]) || null,
-        authors: (m.author || []).map((a) => [a.given, a.family].filter(Boolean).join(' ')).slice(0, 8),
-        year: (m.issued && m.issued['date-parts'] && m.issued['date-parts'][0][0]) || null,
-        container: (m['container-title'] && m['container-title'][0]) || null,
-        doi: m.DOI || null,
-        url: m.URL || (m.DOI ? `https://doi.org/${m.DOI}` : null),
-      },
-    };
+  const qFull = encodeURIComponent(full);
+  const qTitle = encodeURIComponent(title);
+
+  const [crFull, crTitle, oa] = await Promise.all([
+    fetchJson(`${CROSSREF}?query.bibliographic=${qFull}&rows=5&mailto=${CONTACT}`),
+    fetchJson(`${CROSSREF}?query.bibliographic=${qTitle}&rows=5&mailto=${CONTACT}`),
+    fetchJson(`${OPENALEX}?search=${qTitle}&per_page=5&mailto=${CONTACT}`),
+  ]);
+
+  const candidates = [];
+  for (const r of [crFull, crTitle]) {
+    const items = (r.ok && r.data && r.data.message && r.data.message.items) || [];
+    for (const m of items) candidates.push(normalizeCrossref(m));
   }
-  return { source: null, record: null };
+  const oaItems = (oa.ok && oa.data && oa.data.results) || [];
+  for (const m of oaItems) candidates.push(normalizeOpenAlex(m));
+
+  return candidates;
 }
 
 export async function verifyReference(entry) {
   const doiMatch = entry.match(DOI_RE);
   const claimedYear = guessYear(entry);
   const claimedTitle = guessTitle(entry);
+  const claimedAuthor = guessAuthor(entry);
+  const claimed = { title: claimedTitle, year: claimedYear, author: claimedAuthor };
 
-  const viaDoi = Boolean(doiMatch);
-  let found;
-  if (viaDoi) {
-    found = await verifyByDoi(stripDoiTail(doiMatch[0]));
-  } else {
-    found = await verifyByBibliographic(entry);
-  }
-
-  if (found.doiInvalid) {
-    return {
-      entry,
-      status: 'doi_invalid',
-      label: 'DOI is not indexed in Crossref or OpenAlex',
-      claimed: { title: claimedTitle, year: claimedYear },
-      match: null,
-    };
-  }
-
-  if (!found.record) {
-    return {
-      entry,
-      status: viaDoi ? 'not_found' : 'possible_hallucination',
-      label: viaDoi ? 'No matching publication found' : 'No matching title/author/DOI found',
-      claimed: { title: claimedTitle, year: claimedYear },
-      match: null,
-    };
-  }
-
-  const sim = titleSimilarity(claimedTitle, found.record.title || '');
-  const yearOk = !claimedYear || !found.record.year || Math.abs(claimedYear - found.record.year) <= 1;
-
-  let status;
-  let label;
-  if (viaDoi) {
+  // --- DOI path: a resolved DOI is an authoritative pointer. ---
+  if (doiMatch) {
+    const found = await verifyByDoi(stripDoiTail(doiMatch[0]));
+    if (found.doiInvalid) {
+      return { entry, status: 'doi_invalid', label: 'DOI is not indexed in Crossref or OpenAlex', claimed, match: null };
+    }
+    const rec = found.record;
+    const sim = titleSimilarity(claimedTitle, rec.title || '');
+    const yearOk = !claimedYear || !rec.year || Math.abs(claimedYear - rec.year) <= 1;
+    let status = 'verified';
+    let label = 'DOI resolves to a matching publication';
     if (sim < 0.3 && !yearOk) {
       status = 'partial';
       label = 'DOI resolves, but the cited title and year do not match the record';
-    } else {
-      status = 'verified';
-      label = 'DOI resolves to a matching publication';
     }
-  } else if (sim >= 0.6 && yearOk) {
+    return { entry, status, label, claimed, match: { titleSimilarity: Math.round(sim * 100) / 100, ...rec } };
+  }
+
+  // --- No DOI: pool candidates from Crossref + OpenAlex and score the best. ---
+  const candidates = await searchBibliographic(entry);
+  if (!candidates.length) {
+    return {
+      entry,
+      status: 'possible_hallucination',
+      label: 'No record found in Crossref or OpenAlex',
+      claimed,
+      match: null,
+    };
+  }
+
+  let best = null;
+  let bestSim = -1;
+  for (const c of candidates) {
+    const sim = titleSimilarity(claimedTitle, c.title || '');
+    if (sim > bestSim) {
+      bestSim = sim;
+      best = c;
+    }
+  }
+
+  const authorOk = authorMatches(claimedAuthor, best.authors); // true/false/null
+  const yearOk =
+    claimedYear && best.year ? Math.abs(claimedYear - best.year) <= 1 : null; // true/false/null
+  const strongTitle = bestSim >= 0.7;
+
+  let status;
+  let label;
+  if (strongTitle && authorOk === true) {
+    // Exact title + corroborating author is strong evidence; year metadata in the
+    // indexes is noisy (online-first vs issue year), so we don't demote on it.
     status = 'verified';
-    label = 'Publication exists and metadata matches';
-  } else if (sim >= 0.35) {
+    label = 'Publication found; title and author match';
+  } else if (strongTitle && authorOk === null && yearOk !== false) {
+    status = 'verified';
+    label = 'Publication found; title matches';
+  } else if (strongTitle && authorOk === false) {
+    // Title points to a real work, but the cited author is wrong — mis-citation.
     status = 'partial';
-    label = yearOk ? 'Publication exists but title differs' : 'Publication exists but title/year differ';
+    label = 'Title matches a real publication, but the author does not — possible mis-citation';
+  } else if (strongTitle) {
+    status = 'partial';
+    label = 'Title matches a publication, but the year does not match';
+  } else if (bestSim >= 0.5) {
+    status = 'partial';
+    label = 'Only a weak match found — could not confirm this citation';
   } else {
-    status = 'not_found';
-    label = 'No confident match found';
+    status = 'possible_hallucination';
+    label = 'No matching publication found in Crossref or OpenAlex';
   }
 
   return {
     entry,
     status,
     label,
-    claimed: { title: claimedTitle, year: claimedYear },
-    match: { source: found.source, titleSimilarity: Math.round(sim * 100) / 100, ...found.record },
+    claimed,
+    match: {
+      titleSimilarity: Math.round(bestSim * 100) / 100,
+      authorMatch: authorOk,
+      yearMatch: yearOk,
+      ...best,
+    },
   };
 }
 

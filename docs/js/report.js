@@ -54,8 +54,11 @@ export async function buildReport(doc, filename, opts = {}) {
         'AI-associated phrasing density, punctuation variety, opener repetition). No text ' +
         'is sent to any third-party AI detector. This is probabilistic evidence, not proof.',
       referenceVerification:
-        'References are matched against Crossref and OpenAlex (free, open scholarly APIs). ' +
-        'Classification is based on DOI resolution and title/year similarity.',
+        'Each reference is matched against both Crossref and OpenAlex (free, open scholarly APIs) ' +
+        'using the DOI when present, otherwise a full-reference and title search across both indexes. ' +
+        'Classification cross-checks title similarity, first-author, and year: a citation with no strong ' +
+        'match in either index is flagged as a possible hallucination, while a strong title match with a ' +
+        'wrong author is flagged as a possible mis-citation.',
       limitations:
         'AI-writing detection is unreliable for hybrid and human-edited text and must not be ' +
         'the sole basis for any adverse decision. Reference verification depends on coverage of ' +
