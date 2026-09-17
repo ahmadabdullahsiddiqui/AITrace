@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <!-- Content Security Policy: explicit allowlist. All scripts/WASM are same-origin
-         (no CDN). Hugging Face hosts are only needed to download the optional deep-scan
-         model weights (data). No inline scripts are allowed. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://api.crossref.org https://api.openalex.org https://huggingface.co https://*.hf.co https://*.huggingface.co">
+    <!-- Content Security Policy: explicit allowlist. All scripts, WASM and the deep-scan
+         model are same-origin (no CDN, no external model host). The only external
+         connections are the two scholarly APIs for citation checks. No inline scripts. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://api.crossref.org https://api.openalex.org">
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AITrace — Document Authenticity Analyzer</title>

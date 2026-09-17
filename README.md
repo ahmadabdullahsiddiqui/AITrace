@@ -110,9 +110,9 @@ Client-side hardening (all that a static, public GitHub Pages site can enforce):
   hasn't updated them, so they can't be patched without rebuilding Mammoth. In the
   browser (no filesystem, single user) the practical impact is at most a
   self-inflicted tab slowdown on a crafted DOCX, which our error handling contains.
-- The optional deep scan's library and ONNX runtime are **self-hosted** (no CDN);
-  only the model *weights* (data) are fetched from the Hugging Face Hub. To be fully
-  offline, vendor the model too (~80 MB) — see roadmap.
+- The optional deep scan is **fully offline** — library, ONNX runtime, and the
+  distilgpt2 model are all served from this origin. No CDN, no external model host;
+  the only external calls in the whole app are the two citation-verification APIs.
 
 > The access gate is a **deterrent, not real security**: the site is public and
 > the hash is readable, so an offline brute-force can't be prevented client-side.

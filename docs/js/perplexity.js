@@ -25,6 +25,8 @@ import { splitParagraphs } from './detection.js';
 // are stubbed out in this build; the .mjs is the Node build and must NOT be used here.
 const TRANSFORMERS_URL = new URL('../vendor/transformers/transformers.min.js', import.meta.url).href;
 const WASM_PATH = new URL('../vendor/transformers/', import.meta.url).href;
+// Model weights are vendored under docs/vendor/models/<MODEL_ID>/ — fully offline.
+const MODELS_PATH = new URL('../vendor/models/', import.meta.url).href;
 const MODEL_ID = 'Xenova/distilgpt2';
 const MAX_TOKENS = 256; // truncate long paragraphs to keep inference bounded
 
@@ -48,7 +50,10 @@ export async function loadModel(onProgress) {
     const tx = await import(/* @vite-ignore */ TRANSFORMERS_URL);
     const { AutoTokenizer, AutoModelForCausalLM, env } = tx;
     if (env) {
-      env.allowLocalModels = false; // model weights still come from the HF Hub
+      // Fully offline: load the model from our own origin, never the network.
+      env.allowLocalModels = true;
+      env.allowRemoteModels = false;
+      env.localModelPath = MODELS_PATH;
       // Load the ONNX runtime WASM from our own origin, not a CDN.
       if (env.backends && env.backends.onnx && env.backends.onnx.wasm) {
         env.backends.onnx.wasm.wasmPaths = WASM_PATH;

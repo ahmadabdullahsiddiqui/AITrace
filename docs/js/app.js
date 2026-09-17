@@ -277,7 +277,8 @@ function deepScanBlock(pplRes, combined, combinedBand) {
         <div>
           <strong>🧠 Deep scan (perplexity model)</strong>
           <p class="deepscan-note">Optional second signal: runs distilgpt2 in your browser to measure how
-          predictable the text is. First run downloads the model (~tens of MB, then cached). Nothing is uploaded.</p>
+          predictable the text is. First run loads the model (~80 MB) from this site and caches it —
+          nothing is uploaded and nothing external is fetched.</p>
         </div>
         <div class="deepscan-action">
           <button class="btn" id="deepscan-btn">Run deep scan</button>
