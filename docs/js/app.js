@@ -73,22 +73,21 @@ function setProgress(text, sub, pct) {
   }
 }
 
-// Yield to the browser so a just-shown DOM change actually paints before we
-// start heavy work (worker setup, extraction). Two rAFs guarantee a paint frame.
-function nextPaint() {
-  return new Promise((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-  );
-}
-
-async function analyze(file) {
+// Show the loading overlay synchronously the instant a file is chosen, force a
+// reflow, then hand the heavy work to a fresh macrotask so the browser paints the
+// overlay FIRST. (Relying on requestAnimationFrame alone left the overlay lagging
+// several seconds behind on large files.)
+function analyze(file) {
   hide(errorBox);
   hide(reportBox);
   reportBox.innerHTML = '';
   setProgress(`Reading "${file.name}"…`);
   show(progress);
-  await nextPaint(); // ensure the loading overlay is visible immediately
+  void progress.offsetHeight; // force layout so the overlay is painted this frame
+  setTimeout(() => runAnalysis(file), 0);
+}
 
+async function runAnalysis(file) {
   try {
     const doc = await extractDocument(file, (p) => {
       if (p && p.phase === 'extract' && p.pages > 1) {
