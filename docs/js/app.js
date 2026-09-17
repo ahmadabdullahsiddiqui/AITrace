@@ -88,7 +88,16 @@ function analyze(file) {
   setTimeout(() => runAnalysis(file), 0);
 }
 
+// Keep the loading window on screen for at least this long so it is always seen,
+// even when analysis finishes almost instantly (small files).
+const MIN_OVERLAY_MS = 700;
+async function holdOverlay(sinceMs) {
+  const remaining = MIN_OVERLAY_MS - (performance.now() - sinceMs);
+  if (remaining > 0) await new Promise((r) => setTimeout(r, remaining));
+}
+
 async function runAnalysis(file) {
+  const shownAt = performance.now();
   try {
     const doc = await extractDocument(file, (p) => {
       if (p && p.phase === 'extract' && p.pages > 1) {
@@ -111,9 +120,11 @@ async function runAnalysis(file) {
 
     currentReport = report;
     currentDocText = doc.text;
+    await holdOverlay(shownAt);
     hide(progress);
     renderReport(report);
   } catch (err) {
+    await holdOverlay(shownAt);
     hide(progress);
     errorBox.textContent = err.message || String(err);
     show(errorBox);
