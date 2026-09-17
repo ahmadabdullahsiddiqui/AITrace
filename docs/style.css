@@ -26,6 +26,30 @@ body {
   line-height: 1.5;
 }
 
+/* Soft access-code gate */
+#gate {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(1000px 500px at 70% -10%, #1a2436 0, transparent 60%), var(--bg);
+  padding: 20px;
+}
+.unlocked #gate { display: none; }
+.gate-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+  padding: 30px 28px; text-align: center; max-width: 320px; width: 100%; box-shadow: var(--shadow);
+}
+.gate-card img { margin-bottom: 8px; }
+.gate-card h2 { margin: 0 0 2px; letter-spacing: 0.5px; }
+.gate-card > p { color: var(--muted); margin: 0 0 16px; font-size: 13.5px; }
+#gate-input {
+  width: 100%; box-sizing: border-box; text-align: center; letter-spacing: 8px;
+  font-size: 22px; padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--panel-2); color: var(--text); margin-bottom: 12px;
+}
+#gate-input:focus { outline: none; border-color: var(--accent); }
+#gate-form .btn { width: 100%; }
+.gate-error { color: var(--high); min-height: 18px; margin: 10px 0 0; font-size: 13px; }
+
 .topbar {
   padding: 22px 28px;
   border-bottom: 1px solid var(--border);
