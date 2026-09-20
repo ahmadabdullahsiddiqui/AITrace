@@ -8,7 +8,7 @@ import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 import { t, bandLabel } from './i18n.js';
 
-export const APP_VERSION = '1.2.6';
+export const APP_VERSION = '1.2.7';
 
 const $ = (sel) => document.querySelector(sel);
 
