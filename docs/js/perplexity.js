@@ -16,6 +16,7 @@
 // approximate. Treat it as corroborating evidence, never as proof.
 
 import { splitParagraphs } from './detection.js';
+import { t } from './i18n.js';
 
 // Self-hosted: the library and the ONNX runtime WASM are vendored in
 // docs/vendor/transformers/ (no CDN). Resolved relative to THIS module so it works
@@ -195,8 +196,6 @@ export async function analyzePerplexity(fullText, indices, onStep) {
     overallBand: band(overall),
     assessed: assessed.length,
     byIndex,
-    disclaimer:
-      'Perplexity signal from an in-browser language model (distilgpt2). Experimental ' +
-      'and model-specific; corroborating evidence only, not proof of AI authorship.',
+    disclaimer: t('ppl.disclaimer'),
   };
 }

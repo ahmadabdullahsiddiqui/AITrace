@@ -6,8 +6,9 @@
 import { extractDocument } from './extraction.js';
 import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
+import { t, bandLabel } from './i18n.js';
 
-export const APP_VERSION = '1.1.5';
+export const APP_VERSION = '1.2.0';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -94,7 +95,7 @@ function analyze(file) {
   hide(errorBox);
   hide(reportBox);
   reportBox.innerHTML = '';
-  setProgress('Analysing your document…');
+  setProgress(t('progress.analysing'));
   show(progress);
   void progress.offsetHeight; // force layout now
   // Guarantee the overlay is actually PAINTED before any heavy (possibly
@@ -117,17 +118,17 @@ async function runAnalysis(file) {
   try {
     const doc = await extractDocument(file, (p) => {
       if (p && p.phase === 'extract' && p.pages > 1) {
-        setProgress('Analysing your document…', `Reading page ${p.page} of ${p.pages}`, Math.round((p.page / p.pages) * 100));
+        setProgress(t('progress.analysing'), t('progress.readingPage', { page: p.page, pages: p.pages }), Math.round((p.page / p.pages) * 100));
       }
     });
 
     if (!doc.text || doc.text.trim().length < 40) {
-      throw new Error('Could not extract enough text (the file may be scanned/image-only).');
+      throw new Error(t('error.notEnoughText'));
     }
 
     const sensEl = $('#sensitivity');
     const sensitivity = (sensEl && sensEl.value) || 'high';
-    setProgress('Analysing writing style…');
+    setProgress(t('progress.analysingStyle'));
     await new Promise((r) => setTimeout(r, 0)); // let the overlay paint before sync work
     const started = performance.now();
     // Report focuses on the AI-writing analysis only — skip reference verification.
@@ -190,50 +191,56 @@ function renderReport(r) {
         <div>
           <h2 class="doc-name">${esc(r.document.filename)}</h2>
           <p class="doc-meta">
-            ${r.document.pages ? `${num(r.document.pages)} pages · ` : ''}${num(r.document.words)} words · analyzed in your browser
+            ${r.document.pages ? `${num(r.document.pages)} ${t('report.pages')} · ` : ''}${num(r.document.words)} ${t('report.words')} · ${t('report.analyzedInBrowser')}
           </p>
         </div>
         <div class="actions">
-          <span class="band-pill ${bandClass(ai.overallBand)}">AI signal: ${ai.overallBand}</span>
+          <span class="band-pill ${bandClass(ai.overallBand)}">${t('report.aiSignal')}: ${bandLabel(ai.overallBand)}</span>
         </div>
       </div>
     </section>
 
     <section class="panel">
-      <h3 class="section-title">Executive Summary</h3>
+      <h3 class="section-title">${t('report.execSummary')}</h3>
       <div class="cards">
-        ${card('AI writing signal', ai.overallSignal == null ? '—' : `${ai.overallSignal}/100`)}
-        ${card('Overall band', ai.overallBand)}
-        ${card('Strong sections', num(s.strongSections))}
-        ${card('Moderate sections', num(s.moderateSections))}
-        ${card('Sections assessed', num(s.sectionsAssessed))}
+        ${card(t('card.aiWritingSignal'), ai.overallSignal == null ? '—' : `${ai.overallSignal}/100`)}
+        ${card(t('card.overallBand'), bandLabel(ai.overallBand))}
+        ${card(t('card.strongSections'), num(s.strongSections))}
+        ${card(t('card.moderateSections'), num(s.moderateSections))}
+        ${card(t('card.sectionsAssessed'), num(s.sectionsAssessed))}
       </div>
     </section>
 
     <section class="panel">
-      <h3 class="section-title">AI Authorship Analysis</h3>
+      <h3 class="section-title">${t('report.aiAuthorship')}</h3>
       <div class="meter"><div class="${meterClass}" style="width:${ai.overallSignal || 0}%"></div></div>
-      <div class="meter-label"><span>Lower signal</span><span>${ai.overallSignal == null ? 'n/a' : ai.overallSignal + '/100'}</span><span>Higher signal</span></div>
+      <div class="meter-label"><span>${t('meter.lower')}</span><span>${ai.overallSignal == null ? t('na') : ai.overallSignal + '/100'}</span><span>${t('meter.higher')}</span></div>
       <p style="margin-top:12px;color:var(--muted);font-size:13.5px">
-        ${num(ai.counts.high)} strong · ${num(ai.counts.moderate)} moderate · ${num(ai.counts.low)} low
-        across ${num(ai.counts.assessed)} assessed sections (method: ${esc(ai.method)} · sensitivity: ${esc(ai.sensitivityLabel || ai.sensitivity || '—')}).
+        ${t('report.counts', {
+          high: num(ai.counts.high),
+          mod: num(ai.counts.moderate),
+          low: num(ai.counts.low),
+          n: num(ai.counts.assessed),
+          method: esc(ai.method),
+          sens: esc(ai.sensitivityLabel || ai.sensitivity || '—'),
+        })}
       </p>
       <div class="disclaimer">⚠ ${esc(ai.disclaimer)}</div>
       ${deepScanBlock(pplRes, combined, combinedBand)}
-      <h4 style="margin:20px 0 10px;font-size:14px">Flagged sections (${ai.flaggedParagraphs.length})</h4>
-      ${ai.flaggedParagraphs.length ? ai.flaggedParagraphs.map(paraCard).join('') : '<p style="color:var(--muted)">No sections reached the moderate/high threshold.</p>'}
+      <h4 style="margin:20px 0 10px;font-size:14px">${t('report.flagged', { n: ai.flaggedParagraphs.length })}</h4>
+      ${ai.flaggedParagraphs.length ? ai.flaggedParagraphs.map(paraCard).join('') : `<p style="color:var(--muted)">${t('report.noneFlagged')}</p>`}
     </section>
 
     <section class="panel">
-      <h3 class="section-title">Methodology &amp; Limitations</h3>
-      <p style="font-size:13.5px"><strong>AI detection.</strong> ${esc(r.methodology.aiDetection)}</p>
-      <p style="font-size:13.5px;color:var(--muted)"><strong>Limitations.</strong> ${esc(r.methodology.limitations)}</p>
+      <h3 class="section-title">${t('report.methodology')}</h3>
+      <p style="font-size:13.5px"><strong>${t('report.aiDetectionLabel')}</strong> ${esc(r.methodology.aiDetection)}</p>
+      <p style="font-size:13.5px;color:var(--muted)"><strong>${t('report.limitationsLabel')}</strong> ${esc(r.methodology.limitations)}</p>
     </section>
 
     <section class="panel">
       <div class="actions">
-        <button class="btn" id="print-btn">Save / print report (PDF)</button>
-        <button class="btn secondary" id="again-btn">Analyze another document</button>
+        <button class="btn" id="print-btn">${t('report.print')}</button>
+        <button class="btn secondary" id="again-btn">${t('report.again')}</button>
       </div>
     </section>
   `;
@@ -260,23 +267,23 @@ async function runDeepScan() {
 
   try {
     if (!ppl.isReady()) {
-      setStatus('Loading language model (one-time download)…');
+      setStatus(t('deep.loading'));
       await ppl.loadModel((e) => {
         if (e && e.status === 'progress' && e.total) {
           const pct = Math.round((e.loaded / e.total) * 100);
-          setStatus(`Downloading model: ${pct}% (${(e.file || '').split('/').pop() || ''})`);
+          setStatus(t('deep.downloading', { pct, file: (e.file || '').split('/').pop() || '' }));
         }
       });
     }
     const indices = currentReport.aiAnalysis.allParagraphs.filter((p) => p.signal != null).map((p) => p.index);
-    setStatus(`Scoring ${indices.length} sections with the model…`);
+    setStatus(t('deep.scoring', { n: indices.length }));
     const result = await ppl.analyzePerplexity(currentDocText, indices, (done, total) => {
-      setStatus(`Scoring sections with the model… ${done}/${total}`);
+      setStatus(t('deep.scoringProgress', { done, total }));
     });
     currentReport.perplexity = result;
     renderReport(currentReport);
   } catch (err) {
-    setStatus(`Deep scan failed: ${err.message || err}`);
+    setStatus(t('deep.failed', { msg: err.message || err }));
     btn.disabled = false;
   }
 }
@@ -286,13 +293,11 @@ function deepScanBlock(pplRes, combined, combinedBand) {
     return `
       <div class="deepscan">
         <div>
-          <strong>🧠 Deep scan (perplexity model)</strong>
-          <p class="deepscan-note">Optional second signal: runs distilgpt2 in your browser to measure how
-          predictable the text is. First run loads the model (~80 MB) from this site and caches it —
-          nothing is uploaded and nothing external is fetched.</p>
+          <strong>${t('deep.title')}</strong>
+          <p class="deepscan-note">${t('deep.note')}</p>
         </div>
         <div class="deepscan-action">
-          <button class="btn" id="deepscan-btn">Run deep scan</button>
+          <button class="btn" id="deepscan-btn">${t('deep.run')}</button>
           <span id="deepscan-status" class="deepscan-status"></span>
         </div>
       </div>`;
@@ -303,14 +308,14 @@ function deepScanBlock(pplRes, combined, combinedBand) {
     <div class="deepscan done">
       <div class="deepscan-signals">
         <div class="ds-sig">
-          <div class="ds-label">Perplexity signal <span class="band-pill ${bandClass(pplRes.overallBand)}">${pplRes.overallBand}</span></div>
+          <div class="ds-label">${t('deep.perplexitySignal')} <span class="band-pill ${bandClass(pplRes.overallBand)}">${bandLabel(pplRes.overallBand)}</span></div>
           <div class="meter"><div class="${mc}" style="width:${pplRes.overallSignal || 0}%"></div></div>
-          <div class="meter-label"><span>${pplRes.overallSignal == null ? 'n/a' : pplRes.overallSignal + '/100'}</span><span>${esc(pplRes.model)}</span></div>
+          <div class="meter-label"><span>${pplRes.overallSignal == null ? t('na') : pplRes.overallSignal + '/100'}</span><span>${esc(pplRes.model)}</span></div>
         </div>
         <div class="ds-sig">
-          <div class="ds-label">Combined signal <span class="band-pill ${bandClass(combinedBand)}">${combinedBand}</span></div>
+          <div class="ds-label">${t('deep.combinedSignal')} <span class="band-pill ${bandClass(combinedBand)}">${bandLabel(combinedBand)}</span></div>
           <div class="meter"><div class="${cc}" style="width:${combined || 0}%"></div></div>
-          <div class="meter-label"><span>${combined == null ? 'n/a' : combined + '/100'}</span><span>heuristic + perplexity</span></div>
+          <div class="meter-label"><span>${combined == null ? t('na') : combined + '/100'}</span><span>${t('deep.heuristicPlusPpl')}</span></div>
         </div>
       </div>
       <div class="disclaimer">⚠ ${esc(pplRes.disclaimer)}</div>
@@ -324,13 +329,17 @@ function card(k, v) {
 function paraCard(p) {
   const pp = p.ppl && p.ppl.signal != null ? p.ppl : null;
   const pplLine = pp
-    ? `<div class="para-ppl">Perplexity: <strong>${pp.perplexity}</strong> · signal <span class="band-pill ${bandClass(pp.band)}">${pp.signal}/100</span> · ${pp.tokens} tokens</div>`
+    ? `<div class="para-ppl">${t('report.perplexityLine', {
+        ppl: `<strong>${pp.perplexity}</strong>`,
+        pill: `<span class="band-pill ${bandClass(pp.band)}">${pp.signal}/100</span>`,
+        tokens: pp.tokens,
+      })}</div>`
     : '';
   return `
     <div class="para ${p.band}">
       <div class="para-head">
-        <span class="sig">Section ${p.index + 1} · <span class="band-pill ${bandClass(p.band)}">${p.band}</span></span>
-        <span class="sig">heuristic ${p.signal}/100</span>
+        <span class="sig">${t('report.section', { n: p.index + 1 })} · <span class="band-pill ${bandClass(p.band)}">${bandLabel(p.band)}</span></span>
+        <span class="sig">${t('report.heuristic', { n: p.signal })}</span>
       </div>
       <p class="para-text">${esc(p.preview)}</p>
       ${pplLine}

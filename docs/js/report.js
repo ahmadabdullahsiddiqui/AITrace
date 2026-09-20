@@ -3,6 +3,7 @@
 
 import { analyzeAiSignal } from './detection.js';
 import { extractReferences, verifyReferences } from './references.js';
+import { t } from './i18n.js';
 
 export async function buildReport(doc, filename, opts = {}) {
   const sensitivity = opts.sensitivity || 'high';
@@ -58,22 +59,14 @@ export async function buildReport(doc, filename, opts = {}) {
     },
     references: refs,
     methodology: {
-      aiDetection:
-        'Local stylometric heuristics (sentence-length burstiness, lexical diversity, ' +
-        'AI-associated phrasing density, punctuation variety, opener repetition). An optional ' +
-        '"deep scan" adds a second signal by running a small language model (distilgpt2) in your ' +
-        'browser and measuring per-section perplexity. No text is sent to any third-party AI ' +
-        'detector. Both signals are probabilistic evidence, not proof.',
+      aiDetection: t('meth.aiDetection'),
       referenceVerification:
         'Each reference is matched against both Crossref and OpenAlex (free, open scholarly APIs) ' +
         'using the DOI when present, otherwise a full-reference and title search across both indexes. ' +
         'Classification cross-checks title similarity, first-author, and year: a citation with no strong ' +
         'match in either index is flagged as a possible hallucination, while a strong title match with a ' +
         'wrong author is flagged as a possible mis-citation.',
-      limitations:
-        'AI-writing detection is unreliable for hybrid and human-edited text and must not be ' +
-        'the sole basis for any adverse decision. Reference verification depends on coverage of ' +
-        'the open scholarly graph and on citation formatting.',
+      limitations: t('meth.limitations'),
     },
   };
 }

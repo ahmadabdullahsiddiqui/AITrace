@@ -5,6 +5,8 @@
 // app. The engine is intentionally pluggable: replace `scoreParagraph` with a
 // transformer-based perplexity model later without touching the rest of the app.
 
+import { t } from './i18n.js';
+
 // Phrases and connectives disproportionately common in generated text. Presence
 // alone proves nothing; frequency across a paragraph is a weak signal.
 const AI_PHRASES = [
@@ -100,7 +102,7 @@ function scoreParagraph(text, cfg) {
     // Too short to assess reliably — do not manufacture a signal.
     return {
       signal: null,
-      reasons: ['Too short to assess reliably'],
+      reasons: [t('reason.tooShort')],
       metrics: { words: ws.length, sentences: sentences.length },
     };
   }
@@ -113,7 +115,7 @@ function scoreParagraph(text, cfg) {
   //    Very uniform sentence length is a mild AI indicator.
   const burstNorm = clamp(burstiness / (meanLen || 1), 0, 1); // ~0 uniform, higher = varied
   const uniformityScore = clamp((0.55 - burstNorm) / 0.55, 0, 1) * 100;
-  if (uniformityScore > 55) reasons.push('Unusually uniform sentence length');
+  if (uniformityScore > 55) reasons.push(t('reason.uniform'));
 
   // 2) Lexical diversity (type-token ratio). Extremely smooth, mid-range TTR
   //    with little repetition is common in generated text.
@@ -121,7 +123,7 @@ function scoreParagraph(text, cfg) {
   const ttr = unique / ws.length;
   // Map: very high diversity (human, rich) -> low signal; moderate -> mild signal.
   const diversityScore = clamp((0.62 - ttr) / 0.35, 0, 1) * 100;
-  if (ttr < 0.45) reasons.push('Low lexical diversity');
+  if (ttr < 0.45) reasons.push(t('reason.lowDiversity'));
 
   // 3) AI-associated phrasing density.
   const lower = ` ${text.toLowerCase()} `;
@@ -135,7 +137,7 @@ function scoreParagraph(text, cfg) {
   }
   const phrasePer100 = (phraseHits / ws.length) * 100;
   const phraseScore = clamp(phrasePer100 / 2.5, 0, 1) * 100;
-  if (phraseHits >= 2) reasons.push(`Contains AI-associated phrasing (${hitList.slice(0, 3).join(', ')})`);
+  if (phraseHits >= 2) reasons.push(t('reason.aiPhrasing', { list: hitList.slice(0, 3).join(', ') }));
 
   // 4) Punctuation variety. Generated text often leans on plain periods/commas.
   const punctSet = new Set((text.match(/[;:—–(){}!?"]/g) || []));
@@ -146,7 +148,7 @@ function scoreParagraph(text, cfg) {
   const openerUnique = new Set(openers).size;
   const openerRepeat = 1 - openerUnique / openers.length;
   const openerScore = clamp(openerRepeat / 0.5, 0, 1) * 100;
-  if (openerRepeat > 0.4) reasons.push('Repetitive sentence openers');
+  if (openerRepeat > 0.4) reasons.push(t('reason.repetitiveOpeners'));
 
   // Weighted combination -> 0..100 base signal, then apply the sensitivity gain.
   const base =
@@ -230,9 +232,7 @@ export function analyzeAiSignal(text, sensitivity = 'high') {
     paragraphs: scored,
     method: 'heuristic-v1',
     sensitivity,
-    sensitivityLabel: cfg.label,
-    disclaimer:
-      'This is a heuristic AI-writing signal derived from stylometric features. ' +
-      'It is probabilistic evidence, not proof of AI authorship, and human editing cannot be excluded.',
+    sensitivityLabel: t(`senslabel.${cfg.label}`),
+    disclaimer: t('detect.disclaimer'),
   };
 }

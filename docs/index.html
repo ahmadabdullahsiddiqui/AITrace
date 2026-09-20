@@ -11,21 +11,27 @@
     <title>AITrace — Document Authenticity Analyzer</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="favicon.svg" />
-    <link rel="stylesheet" href="style.css?v=1.1.5" />
+    <link rel="stylesheet" href="style.css?v=1.2.0" />
     <!-- DOCX parser (mammoth), vendored locally as a UMD global. pdf.js is imported as an ES module inside js/extraction.js. -->
     <script src="vendor/mammoth.browser.min.js" defer></script>
+    <!-- Language (flags) switcher + static-string translation. Loaded first so
+         the gate and header are translated before the user interacts. -->
+    <script type="module" src="js/i18n.js?v=1.2.0"></script>
   </head>
   <body>
+    <!-- Language switcher: fixed top-right, visible on the gate and the app. -->
+    <div id="lang-switch" class="lang-switch"></div>
+
     <div id="gate">
       <form id="gate-form" class="gate-card" autocomplete="off">
         <img src="favicon.svg" width="52" height="52" alt="" />
         <h2>AITrace</h2>
-        <p>Enter access code</p>
+        <p data-i18n="gate.enter">Enter access code</p>
         <!-- Honeypot: hidden from users; bots that autofill it are rejected. -->
         <input id="gate-hp" class="gate-hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <input id="gate-input" inputmode="numeric" pattern="[0-9]*" maxlength="8"
-               autocomplete="off" aria-label="Access code" placeholder="••••••••" />
-        <button type="submit" class="btn">Unlock</button>
+               autocomplete="off" data-i18n-aria="gate.aria" aria-label="Access code" placeholder="••••••••" />
+        <button type="submit" class="btn" data-i18n="gate.unlock">Unlock</button>
         <p id="gate-error" class="gate-error" role="alert"></p>
       </form>
     </div>
@@ -35,7 +41,7 @@
         <img class="logo" src="favicon.svg" width="46" height="46" alt="AITrace logo" />
         <div>
           <h1>AITrace</h1>
-          <p class="tagline">Evidence-based document authenticity — AI-writing signal &amp; citation verification</p>
+          <p class="tagline" data-i18n="header.tagline">Evidence-based document authenticity — AI-writing signal &amp; citation verification</p>
         </div>
       </div>
     </header>
@@ -46,19 +52,19 @@
           <input type="file" id="file-input" accept=".pdf,.docx,.txt" hidden />
           <div class="dz-inner">
             <div class="dz-icon">⇪</div>
-            <p class="dz-title">Drop a PDF, DOCX or TXT here</p>
-            <p class="dz-sub">or <button type="button" id="browse-btn" class="link">browse files</button> · everything runs in your browser</p>
+            <p class="dz-title" data-i18n="upload.dropTitle">Drop a PDF, DOCX or TXT here</p>
+            <p class="dz-sub"><span data-i18n="upload.or">or</span> <button type="button" id="browse-btn" class="link" data-i18n="upload.browse">browse files</button> · <span data-i18n="upload.runsInBrowser">everything runs in your browser</span></p>
           </div>
         </div>
         <div class="settings-row">
-          <label for="sensitivity">Detection sensitivity</label>
+          <label for="sensitivity" data-i18n="settings.sensitivity">Detection sensitivity</label>
           <select id="sensitivity">
-            <option value="balanced">Balanced — fewer flags, higher confidence</option>
-            <option value="high" selected>High — flags more suspect text (default)</option>
-            <option value="maximum">Maximum — most aggressive, more false positives</option>
+            <option value="balanced" data-i18n="sens.balanced">Balanced — fewer flags, higher confidence</option>
+            <option value="high" selected data-i18n="sens.high">High — flags more suspect text (default)</option>
+            <option value="maximum" data-i18n="sens.maximum">Maximum — most aggressive, more false positives</option>
           </select>
         </div>
-        <p class="privacy-note">
+        <p class="privacy-note" data-i18n-html="privacy.note">
           🔒 <strong>Everything runs locally in your browser.</strong> Parsing, AI-writing analysis and the
           optional deep-scan model all run on your device — your document is
           <strong class="privacy-strong">NEVER UPLOADED</strong> and no external services are contacted.
@@ -68,10 +74,10 @@
       <div id="progress" class="overlay hidden" role="status" aria-live="polite">
         <div class="loader-card">
           <div class="spinner"></div>
-          <p id="progress-text">Analysing your document…</p>
+          <p id="progress-text" data-i18n="progress.analysing">Analysing your document…</p>
           <div id="progress-bar" class="progress-bar hidden"><div id="progress-fill"></div></div>
           <p id="progress-sub" class="progress-sub"></p>
-          <p class="loader-hint">This runs entirely in your browser — large files may take a moment.</p>
+          <p class="loader-hint" data-i18n="progress.hint">This runs entirely in your browser — large files may take a moment.</p>
         </div>
       </div>
 
@@ -81,17 +87,17 @@
     </main>
 
     <footer>
-      <p>
+      <p data-i18n-html="footer.disclaimer">
         AITrace is an evidence engine, not a verdict machine. AI-writing signals are probabilistic and
         <strong>not proof of authorship</strong>. Open source · no paid APIs · runs entirely in your browser.
       </p>
-      <p class="footer-credit">Made and Designed with <span class="heart">❤</span> by Ahmad Abdullah</p>
+      <p class="footer-credit" data-i18n-html="footer.credit">Made and Designed with <span class="heart">❤</span> by Ahmad Abdullah</p>
       <p class="footer-meta">
-        <a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · v<span id="app-version">1.1.5</span>
+        <a href="privacy.html" target="_blank" rel="noopener" data-i18n="footer.privacy">Privacy</a> · v<span id="app-version">1.2.0</span>
       </p>
     </footer>
 
-    <script type="module" src="js/gate.js?v=1.1.5"></script>
-    <script type="module" src="js/app.js?v=1.1.5"></script>
+    <script type="module" src="js/gate.js?v=1.2.0"></script>
+    <script type="module" src="js/app.js?v=1.2.0"></script>
   </body>
 </html>

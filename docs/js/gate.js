@@ -9,6 +9,8 @@
 // Verification: PBKDF2-SHA256(code, SALT, ITERATIONS) compared to a baked hash.
 // Only the derived hash is stored; the plaintext code is not.
 
+import { t } from './i18n.js';
+
 // Clickjacking defense: GitHub Pages can't send X-Frame-Options / frame-ancestors,
 // so break out of any frame that isn't us.
 if (window.top !== window.self) {
@@ -109,7 +111,7 @@ if (gate) {
   // If currently locked, reflect the remaining time.
   const lock0 = loadLock();
   if (lock0.until && Date.now() < lock0.until) {
-    err.textContent = `Too many attempts — wait ${Math.ceil((lock0.until - Date.now()) / 1000)}s`;
+    err.textContent = t('gate.tooMany', { s: Math.ceil((lock0.until - Date.now()) / 1000) });
   }
 
   form.addEventListener('submit', async (e) => {
@@ -117,13 +119,13 @@ if (gate) {
 
     // Honeypot: a real user never fills this hidden field; bots that autofill do.
     if (honeypot && honeypot.value) {
-      err.textContent = 'Incorrect code';
+      err.textContent = t('gate.incorrect');
       return;
     }
 
     const lock = loadLock();
     if (lock.until && Date.now() < lock.until) {
-      err.textContent = `Too many attempts — wait ${Math.ceil((lock.until - Date.now()) / 1000)}s`;
+      err.textContent = t('gate.tooMany', { s: Math.ceil((lock.until - Date.now()) / 1000) });
       return;
     }
 
@@ -132,7 +134,7 @@ if (gate) {
 
     button.disabled = true;
     input.disabled = true;
-    err.textContent = 'Checking…';
+    err.textContent = t('gate.checking');
     await sleep(350); // small fixed delay to slow scripted hammering
 
     let ok = false;
@@ -161,9 +163,10 @@ if (gate) {
     input.disabled = false;
     input.value = '';
     if (until) {
-      err.textContent = `Too many attempts — wait ${Math.ceil((until - Date.now()) / 1000)}s`;
+      err.textContent = t('gate.tooMany', { s: Math.ceil((until - Date.now()) / 1000) });
     } else {
-      err.textContent = `Incorrect code (${FREE_TRIES - fails} attempt${FREE_TRIES - fails === 1 ? '' : 's'} left)`;
+      const left = FREE_TRIES - fails;
+      err.textContent = t(left === 1 ? 'gate.incorrectOne' : 'gate.incorrectMany', { n: left });
       input.focus();
     }
   });
