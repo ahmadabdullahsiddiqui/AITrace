@@ -290,8 +290,9 @@ export function initLangSwitcher() {
   const other = current === 'de' ? 'en' : 'de';
   const flags = { en: '🇬🇧', de: '🇩🇪' };
   const label = { en: 'EN', de: 'DE' };
-  // A single toggle tab: shows the CURRENT language; clicking switches to the other.
-  host.innerHTML = `<button type="button" class="lang-btn active" data-to="${other}" aria-label="${t('lang.aria')}: ${t(`lang.${current}`)}" title="${t(`lang.${other}`)}"><span class="flag">${flags[current]}</span><span class="lang-code">${label[current]}</span></button>`;
+  // A single toggle tab: shows the OTHER (target) language; clicking switches to it.
+  // English UI shows a "DE" button, German UI shows an "EN" button.
+  host.innerHTML = `<button type="button" class="lang-btn" data-to="${other}" aria-label="${t('lang.aria')}: ${t(`lang.${other}`)}" title="${t(`lang.${other}`)}"><span class="flag">${flags[other]}</span><span class="lang-code">${label[other]}</span></button>`;
   host.querySelector('.lang-btn').addEventListener('click', (e) => {
     const to = e.currentTarget.getAttribute('data-to');
     setLang(to);
