@@ -28,10 +28,10 @@
   .langbar { order: -1; align-self: flex-end; margin: 0 0 18px; }
   .langbar a {
     display: inline-flex; align-items: center; justify-content: center;
-    text-decoration: none; padding: 6px 9px; border-radius: 999px; line-height: 1;
+    text-decoration: none; color: #e7ecf5; font-size: 12px; font-weight: 600;
+    letter-spacing: .5px; padding: 6px 12px; border-radius: 999px; line-height: 1;
     background: rgba(125, 125, 125, .14); border: 1px solid rgba(125, 125, 125, .3);
   }
-  .langbar a .flag { font-size: 20px; line-height: 1; }
   /* Default (English shown): show the "EN" tab (which links to German). */
   #lang-de { display: none; }
   .langbar .sw-de { display: none; }
@@ -173,8 +173,8 @@
     <!-- The button shows the TARGET language you can switch to.
          sw-en: shown while English is active → offers "DE" (switch to German).
          sw-de: shown while German is active → offers "EN" (switch to English). -->
-    <a class="sw-en" href="#lang-de" title="Auf Deutsch wechseln" aria-label="Auf Deutsch wechseln"><span class="flag">🇩🇪</span></a>
-    <a class="sw-de" href="#lang-en" title="Switch to English" aria-label="Switch to English"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span></a>
+    <a class="sw-en" href="#lang-de" title="Auf Deutsch wechseln" aria-label="Auf Deutsch wechseln">DE</a>
+    <a class="sw-de" href="#lang-en" title="Switch to English" aria-label="Switch to English">EN</a>
   </nav>
 
 </body>

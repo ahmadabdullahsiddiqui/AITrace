@@ -288,10 +288,11 @@ export function initLangSwitcher() {
   if (!host) return;
   const current = getLang();
   const other = current === 'de' ? 'en' : 'de';
-  const flags = { en: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', de: '🇩🇪' };
-  // A single toggle: shows only the OTHER (target) language's flag; clicking
-  // switches to it. English UI shows the German flag, German UI the England flag.
-  host.innerHTML = `<button type="button" class="lang-btn" data-to="${other}" aria-label="${t('lang.aria')}: ${t(`lang.${other}`)}" title="${t(`lang.${other}`)}"><span class="flag">${flags[other]}</span></button>`;
+  const label = { en: 'EN', de: 'DE' };
+  // A single toggle: shows the OTHER (target) language as text; clicking switches
+  // to it. English UI shows "DE", German UI shows "EN". Text only — no flag emoji
+  // (flag glyphs render inconsistently on some platforms, e.g. Windows).
+  host.innerHTML = `<button type="button" class="lang-btn" data-to="${other}" aria-label="${t('lang.aria')}: ${t(`lang.${other}`)}" title="${t(`lang.${other}`)}"><span class="lang-code">${label[other]}</span></button>`;
   host.querySelector('.lang-btn').addEventListener('click', (e) => {
     const to = e.currentTarget.getAttribute('data-to');
     setLang(to);
