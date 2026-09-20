@@ -314,9 +314,16 @@ export function initLangSwitcher() {
 // Bootstrap: reflect the language on <html> and translate static markup as soon
 // as the DOM is ready. Guarded so importing this from several modules is safe.
 function boot() {
-  document.documentElement.setAttribute('lang', getLang());
+  const lang = getLang();
+  document.documentElement.setAttribute('lang', lang);
   applyStaticI18n();
   initLangSwitcher();
+  // The privacy page is a separate, JS-free document (strict CSP), so it can't
+  // read the stored language. When German is active, deep-link straight to its
+  // German section via the CSS :target toggle.
+  document.querySelectorAll('a[href="privacy.html"]').forEach((a) => {
+    if (lang === 'de') a.setAttribute('href', 'privacy.html#lang-de');
+  });
 }
 
 if (!window.__aitraceI18nBooted) {

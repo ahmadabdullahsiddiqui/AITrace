@@ -12,6 +12,7 @@
     max-width: 760px; margin: 0 auto; padding: 28px 18px 60px;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     line-height: 1.6; color: #e7ecf5; background: #0f1420;
+    display: flex; flex-direction: column;
   }
   @media (prefers-color-scheme: light) { body { color: #14201c; background: #f5f7fb; } }
   a { color: #4f8cff; }
@@ -20,64 +21,163 @@
   .sub { color: #9aa7bd; margin: 0 0 1.4em; }
   code { background: rgba(125, 125, 125, .18); padding: 1px 5px; border-radius: 5px; }
   ul { padding-left: 1.2em; }
+
+  /* Language switcher — pure CSS, no script (this page's CSP forbids JS).
+     A single segmented "EN | DE" tab; content toggles via :target. */
+  .langbar { order: -1; align-self: flex-end; margin: 0 0 18px; }
+  .langbar .seg {
+    display: inline-flex; align-items: center; gap: 2px; padding: 3px;
+    border-radius: 999px; background: rgba(125, 125, 125, .14);
+    border: 1px solid rgba(125, 125, 125, .3);
+  }
+  .langbar a {
+    text-decoration: none; color: #9aa7bd; font-size: 12px; font-weight: 600;
+    letter-spacing: .5px; padding: 4px 10px; border-radius: 999px; line-height: 1;
+  }
+  .langbar a .flag { font-weight: 400; }
+  /* Default (no / #lang-en target): English shown, English tab active. */
+  #lang-de { display: none; }
+  .langbar .to-en { color: #e7ecf5; background: rgba(79, 140, 255, .18); }
+  .langbar .to-de { color: #9aa7bd; background: transparent; }
+  /* German selected: swap visibility and the active tab. */
+  #lang-de:target { display: block; }
+  #lang-de:target ~ #lang-en { display: none; }
+  #lang-de:target ~ .langbar .to-de { color: #e7ecf5; background: rgba(79, 140, 255, .18); }
+  #lang-de:target ~ .langbar .to-en { color: #9aa7bd; background: transparent; }
 </style>
 </head>
 <body>
-  <h1>Privacy Policy</h1>
-  <p class="sub">AITrace — Document Authenticity Analyzer · last updated 17 September 2026</p>
 
-  <p><strong>Short version: your document never leaves your browser.</strong> There are
-  no accounts, no sign-in, no cookies, no analytics, and no tracking. Parsing, AI-writing
-  analysis and the optional deep-scan model all run locally on your device. Nothing you
-  provide is sent to any external service.</p>
+  <!-- German content first, English second, so the sibling (~) selectors below
+       can toggle both the English block and the active tab from #lang-de:target. -->
+  <section id="lang-de">
+    <h1>Datenschutzerklärung</h1>
+    <p class="sub">AITrace — Dokumentenechtheits-Analyse · zuletzt aktualisiert am 17. September 2026</p>
 
-  <h2>What happens to your document</h2>
-  <ul>
-    <li><strong>Parsed and analysed locally.</strong> PDF/DOCX/TXT text extraction and the
-      AI-writing signal (heuristics, and the optional in-browser perplexity model) run
-      entirely in your browser. The document's contents are <strong>not uploaded</strong>
-      to us or anyone else.</li>
-    <li><strong>Not stored.</strong> AITrace keeps no server-side copy and writes no
-      persistent copy of your document; it is held in memory only while you analyse it and
-      is discarded when you close or reload the page.</li>
-    <li><strong>No personal data</strong> (name, email, location, identifiers) is
-      requested, collected, or stored.</li>
-  </ul>
+    <p><strong>Kurzfassung: Dein Dokument verlässt niemals deinen Browser.</strong> Es gibt
+    keine Konten, keine Anmeldung, keine Cookies, keine Analyse-Tools und kein Tracking.
+    Verarbeitung, KI-Schreibanalyse und das optionale Deep-Scan-Modell laufen alle lokal auf
+    deinem Gerät. Nichts, was du bereitstellst, wird an einen externen Dienst gesendet.</p>
 
-  <h2>Network activity</h2>
-  <ul>
-    <li><strong>Reference verification is currently disabled.</strong> This build focuses on the
-      AI-writing analysis, so no citation data is sent to any external scholarly API. (The code
-      for optional Crossref/OpenAlex verification remains in the project but is not run.)</li>
-    <li><strong>Optional "deep scan".</strong> The analysis library, its runtime and the
-      <code>distilgpt2</code> model are all served from this site itself — <strong>no CDN
-      and no external model host</strong>. The text is scored entirely on your device and is
-      <strong>not uploaded</strong>. The deep scan makes no external network requests at all.</li>
-    <li><strong>Host logs.</strong> As with any website, the static host
-      (<strong>GitHub Pages</strong>) receives the ordinary HTTP request needed to deliver
-      the page, which may include your IP address and browser type in the host's standard
-      server logs. This is processing by the host, not by AITrace. See GitHub's privacy
-      statement for details.</li>
-  </ul>
+    <h2>Was mit deinem Dokument geschieht</h2>
+    <ul>
+      <li><strong>Lokal verarbeitet und analysiert.</strong> Die Textextraktion aus PDF/DOCX/TXT
+        und das KI-Schreibsignal (Heuristiken sowie das optionale Perplexitätsmodell im Browser)
+        laufen vollständig in deinem Browser. Der Inhalt des Dokuments wird <strong>nicht
+        hochgeladen</strong> — weder zu uns noch zu irgendjemand anderem.</li>
+      <li><strong>Nicht gespeichert.</strong> AITrace behält keine serverseitige Kopie und legt
+        keine dauerhafte Kopie deines Dokuments an; es wird nur im Arbeitsspeicher gehalten,
+        während du es analysierst, und beim Schließen oder Neuladen der Seite verworfen.</li>
+      <li><strong>Keine personenbezogenen Daten</strong> (Name, E-Mail, Standort, Kennungen)
+        werden angefragt, erfasst oder gespeichert.</li>
+    </ul>
 
-  <h2>Cookies &amp; tracking</h2>
-  <p>None. AITrace sets no cookies and uses no analytics, fingerprinting, advertising, or
-  third-party tracking scripts.</p>
+    <h2>Netzwerkaktivität</h2>
+    <ul>
+      <li><strong>Die Quellenprüfung ist derzeit deaktiviert.</strong> Dieser Build konzentriert
+        sich auf die KI-Schreibanalyse, daher werden keine Zitationsdaten an eine externe
+        wissenschaftliche API gesendet. (Der Code für die optionale Crossref-/OpenAlex-Prüfung
+        bleibt im Projekt, wird aber nicht ausgeführt.)</li>
+      <li><strong>Optionaler „Deep-Scan".</strong> Die Analysebibliothek, ihre Laufzeitumgebung
+        und das Modell <code>distilgpt2</code> werden alle von dieser Seite selbst bereitgestellt
+        — <strong>kein CDN und kein externer Modell-Host</strong>. Der Text wird vollständig auf
+        deinem Gerät bewertet und <strong>nicht hochgeladen</strong>. Der Deep-Scan stellt
+        überhaupt keine externen Netzwerkanfragen.</li>
+      <li><strong>Host-Protokolle.</strong> Wie bei jeder Website erhält der statische Host
+        (<strong>GitHub Pages</strong>) die gewöhnliche HTTP-Anfrage, die zur Auslieferung der
+        Seite nötig ist; diese kann deine IP-Adresse und deinen Browsertyp in den
+        Standard-Serverprotokollen des Hosts enthalten. Das ist eine Verarbeitung durch den
+        Host, nicht durch AITrace. Einzelheiten findest du in der Datenschutzerklärung von
+        GitHub.</li>
+    </ul>
 
-  <h2>Your control</h2>
-  <p>Because your document is processed only in memory and nothing is uploaded, there is
-  no stored document to erase. Any cached library/model files from the optional deep scan
-  live in your browser's cache and can be removed by clearing the site's data in your
-  browser settings.</p>
+    <h2>Cookies &amp; Tracking</h2>
+    <p>Keine. AITrace setzt keine Cookies und verwendet keine Analyse-, Fingerprinting-,
+    Werbe- oder Drittanbieter-Tracking-Skripte.</p>
 
-  <h2>Not a verdict machine</h2>
-  <p>AITrace reports probabilistic <em>evidence</em>. AI-writing signals are not proof of
-  authorship and must not be the sole basis for any adverse decision.</p>
+    <h2>Deine Kontrolle</h2>
+    <p>Da dein Dokument nur im Arbeitsspeicher verarbeitet wird und nichts hochgeladen wird,
+    gibt es kein gespeichertes Dokument zu löschen. Etwaige zwischengespeicherte
+    Bibliotheks-/Modelldateien aus dem optionalen Deep-Scan liegen im Cache deines Browsers
+    und können durch Löschen der Website-Daten in den Browser-Einstellungen entfernt werden.</p>
 
-  <h2>Changes</h2>
-  <p>If this policy changes, the “last updated” date above will change.</p>
+    <h2>Kein Urteilsautomat</h2>
+    <p>AITrace liefert probabilistische <em>Hinweise</em>. KI-Schreibsignale sind kein Nachweis
+    der Urheberschaft und dürfen nicht die alleinige Grundlage für eine nachteilige
+    Entscheidung sein.</p>
 
-  <h2>Contact</h2>
-  <p>Questions: <a href="mailto:ahmadabdullah@gmx.de">ahmadabdullah@gmx.de</a></p>
+    <h2>Änderungen</h2>
+    <p>Wenn sich diese Richtlinie ändert, ändert sich das Datum „zuletzt aktualisiert" oben.</p>
+
+    <h2>Kontakt</h2>
+    <p>Fragen: <a href="mailto:ahmadabdullah@gmx.de">ahmadabdullah@gmx.de</a></p>
+  </section>
+
+  <section id="lang-en">
+    <h1>Privacy Policy</h1>
+    <p class="sub">AITrace — Document Authenticity Analyzer · last updated 17 September 2026</p>
+
+    <p><strong>Short version: your document never leaves your browser.</strong> There are
+    no accounts, no sign-in, no cookies, no analytics, and no tracking. Parsing, AI-writing
+    analysis and the optional deep-scan model all run locally on your device. Nothing you
+    provide is sent to any external service.</p>
+
+    <h2>What happens to your document</h2>
+    <ul>
+      <li><strong>Parsed and analysed locally.</strong> PDF/DOCX/TXT text extraction and the
+        AI-writing signal (heuristics, and the optional in-browser perplexity model) run
+        entirely in your browser. The document's contents are <strong>not uploaded</strong>
+        to us or anyone else.</li>
+      <li><strong>Not stored.</strong> AITrace keeps no server-side copy and writes no
+        persistent copy of your document; it is held in memory only while you analyse it and
+        is discarded when you close or reload the page.</li>
+      <li><strong>No personal data</strong> (name, email, location, identifiers) is
+        requested, collected, or stored.</li>
+    </ul>
+
+    <h2>Network activity</h2>
+    <ul>
+      <li><strong>Reference verification is currently disabled.</strong> This build focuses on the
+        AI-writing analysis, so no citation data is sent to any external scholarly API. (The code
+        for optional Crossref/OpenAlex verification remains in the project but is not run.)</li>
+      <li><strong>Optional "deep scan".</strong> The analysis library, its runtime and the
+        <code>distilgpt2</code> model are all served from this site itself — <strong>no CDN
+        and no external model host</strong>. The text is scored entirely on your device and is
+        <strong>not uploaded</strong>. The deep scan makes no external network requests at all.</li>
+      <li><strong>Host logs.</strong> As with any website, the static host
+        (<strong>GitHub Pages</strong>) receives the ordinary HTTP request needed to deliver
+        the page, which may include your IP address and browser type in the host's standard
+        server logs. This is processing by the host, not by AITrace. See GitHub's privacy
+        statement for details.</li>
+    </ul>
+
+    <h2>Cookies &amp; tracking</h2>
+    <p>None. AITrace sets no cookies and uses no analytics, fingerprinting, advertising, or
+    third-party tracking scripts.</p>
+
+    <h2>Your control</h2>
+    <p>Because your document is processed only in memory and nothing is uploaded, there is
+    no stored document to erase. Any cached library/model files from the optional deep scan
+    live in your browser's cache and can be removed by clearing the site's data in your
+    browser settings.</p>
+
+    <h2>Not a verdict machine</h2>
+    <p>AITrace reports probabilistic <em>evidence</em>. AI-writing signals are not proof of
+    authorship and must not be the sole basis for any adverse decision.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, the “last updated” date above will change.</p>
+
+    <h2>Contact</h2>
+    <p>Questions: <a href="mailto:ahmadabdullah@gmx.de">ahmadabdullah@gmx.de</a></p>
+  </section>
+
+  <nav class="langbar" aria-label="Language / Sprache">
+    <span class="seg">
+      <a class="to-en" href="#lang-en"><span class="flag">🇬🇧</span> EN</a>
+      <a class="to-de" href="#lang-de"><span class="flag">🇩🇪</span> DE</a>
+    </span>
+  </nav>
+
 </body>
 </html>
