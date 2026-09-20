@@ -58,15 +58,14 @@ body {
   display: inline-flex;
 }
 .lang-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 12px; border-radius: 999px; cursor: pointer;
-  background: rgba(23, 29, 43, 0.8); color: var(--text);
-  border: 1px solid var(--border); font: inherit; font-size: 12px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 9px; border-radius: 999px; cursor: pointer;
+  background: rgba(23, 29, 43, 0.8);
+  border: 1px solid var(--border); font: inherit; line-height: 1;
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.lang-btn .flag { font-size: 15px; }
-.lang-btn .lang-code { letter-spacing: 0.5px; font-weight: 600; }
+.lang-btn .flag { font-size: 20px; line-height: 1; }
 .lang-btn:hover { border-color: var(--accent); background: rgba(79, 140, 255, 0.14); }
 @media print { .lang-switch { display: none; } }
 
