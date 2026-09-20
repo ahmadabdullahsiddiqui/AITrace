@@ -11,12 +11,15 @@
     <title>AITrace — Document Authenticity Analyzer</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="favicon.svg" />
-    <link rel="stylesheet" href="style.css?v=1.2.7" />
+    <link rel="stylesheet" href="style.css?v=1.2.8" />
     <!-- DOCX parser (mammoth), vendored locally as a UMD global. pdf.js is imported as an ES module inside js/extraction.js. -->
     <script src="vendor/mammoth.browser.min.js" defer></script>
+    <!-- Host guard: AITrace runs only on its GitHub Pages host. Loaded FIRST so it
+         can halt the page (on localhost / other hosts) before anything else runs. -->
+    <script type="module" src="js/host-guard.js?v=1.2.8"></script>
     <!-- Language (flags) switcher + static-string translation. Loaded first so
          the gate and header are translated before the user interacts. -->
-    <script type="module" src="js/i18n.js?v=1.2.7"></script>
+    <script type="module" src="js/i18n.js?v=1.2.8"></script>
   </head>
   <body>
     <!-- Language switcher: fixed top-right, visible on the gate and the app. -->
@@ -93,11 +96,11 @@
       </p>
       <p class="footer-credit" data-i18n-html="footer.credit">Made and Designed with <span class="heart">❤</span> by Ahmad Abdullah</p>
       <p class="footer-meta">
-        <a href="privacy.html" target="_blank" rel="noopener" data-i18n="footer.privacy">Privacy</a> · v<span id="app-version">1.2.7</span>
+        <a href="privacy.html" target="_blank" rel="noopener" data-i18n="footer.privacy">Privacy</a> · v<span id="app-version">1.2.8</span>
       </p>
     </footer>
 
-    <script type="module" src="js/gate.js?v=1.2.7"></script>
-    <script type="module" src="js/app.js?v=1.2.7"></script>
+    <script type="module" src="js/gate.js?v=1.2.8"></script>
+    <script type="module" src="js/app.js?v=1.2.8"></script>
   </body>
 </html>

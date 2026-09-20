@@ -8,7 +8,11 @@ import { buildReport } from './report.js';
 import * as ppl from './perplexity.js';
 import { t, bandLabel } from './i18n.js';
 
-export const APP_VERSION = '1.2.7';
+// Host guard (host-guard.js runs first and sets this): off the official GitHub
+// Pages host the page is already halted — don't boot the app.
+if (window.__AITRACE_HOST_OK__ === false) throw new Error('AITrace: blocked host');
+
+export const APP_VERSION = '1.2.8';
 
 const $ = (sel) => document.querySelector(sel);
 

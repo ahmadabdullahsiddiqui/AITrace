@@ -11,6 +11,10 @@
 
 import { t } from './i18n.js';
 
+// Host guard (host-guard.js runs first and sets this): off the official GitHub
+// Pages host the page is already halted — don't wire up the gate at all.
+if (window.__AITRACE_HOST_OK__ === false) throw new Error('AITrace: blocked host');
+
 // Clickjacking defense: GitHub Pages can't send X-Frame-Options / frame-ancestors,
 // so break out of any frame that isn't us.
 if (window.top !== window.self) {
