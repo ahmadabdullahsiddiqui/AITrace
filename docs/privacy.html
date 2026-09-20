@@ -23,27 +23,25 @@
   ul { padding-left: 1.2em; }
 
   /* Language switcher — pure CSS, no script (this page's CSP forbids JS).
-     A single segmented "EN | DE" tab; content toggles via :target. */
+     A single toggle tab: shows the CURRENT language; clicking switches to the
+     other. Content and the button both toggle via the :target trick. */
   .langbar { order: -1; align-self: flex-end; margin: 0 0 18px; }
-  .langbar .seg {
-    display: inline-flex; align-items: center; gap: 2px; padding: 3px;
-    border-radius: 999px; background: rgba(125, 125, 125, .14);
-    border: 1px solid rgba(125, 125, 125, .3);
-  }
   .langbar a {
-    text-decoration: none; color: #9aa7bd; font-size: 12px; font-weight: 600;
-    letter-spacing: .5px; padding: 4px 10px; border-radius: 999px; line-height: 1;
+    display: inline-flex; align-items: center; gap: 6px;
+    text-decoration: none; color: #e7ecf5; font-size: 12px; font-weight: 600;
+    letter-spacing: .5px; padding: 6px 12px; border-radius: 999px; line-height: 1;
+    background: rgba(125, 125, 125, .14); border: 1px solid rgba(125, 125, 125, .3);
   }
-  .langbar a .flag { font-weight: 400; }
-  /* Default (no / #lang-en target): English shown, English tab active. */
+  .langbar a .flag { font-weight: 400; font-size: 15px; }
+  /* Default (English shown): show the "EN" tab (which links to German). */
   #lang-de { display: none; }
-  .langbar .to-en { color: #e7ecf5; background: rgba(79, 140, 255, .18); }
-  .langbar .to-de { color: #9aa7bd; background: transparent; }
-  /* German selected: swap visibility and the active tab. */
+  .langbar .sw-de { display: none; }
+  .langbar .sw-en { display: inline-flex; }
+  /* German selected: swap the content and the toggle button. */
   #lang-de:target { display: block; }
   #lang-de:target ~ #lang-en { display: none; }
-  #lang-de:target ~ .langbar .to-de { color: #e7ecf5; background: rgba(79, 140, 255, .18); }
-  #lang-de:target ~ .langbar .to-en { color: #9aa7bd; background: transparent; }
+  #lang-de:target ~ .langbar .sw-en { display: none; }
+  #lang-de:target ~ .langbar .sw-de { display: inline-flex; }
 </style>
 </head>
 <body>
@@ -173,10 +171,10 @@
   </section>
 
   <nav class="langbar" aria-label="Language / Sprache">
-    <span class="seg">
-      <a class="to-en" href="#lang-en"><span class="flag">🇬🇧</span> EN</a>
-      <a class="to-de" href="#lang-de"><span class="flag">🇩🇪</span> DE</a>
-    </span>
+    <!-- sw-en: shown while English is active; clicking switches to German.
+         sw-de: shown while German is active; clicking switches back to English. -->
+    <a class="sw-en" href="#lang-de" title="Deutsch"><span class="flag">🇬🇧</span> EN</a>
+    <a class="sw-de" href="#lang-en" title="English"><span class="flag">🇩🇪</span> DE</a>
   </nav>
 
 </body>

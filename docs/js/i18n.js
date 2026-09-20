@@ -287,27 +287,16 @@ export function initLangSwitcher() {
   const host = document.getElementById('lang-switch');
   if (!host) return;
   const current = getLang();
-  host.setAttribute('role', 'group');
-  host.setAttribute('aria-label', t('lang.aria'));
-  // A single segmented tab: [ 🇬🇧 EN | 🇩🇪 DE ] with the active side highlighted.
-  const flags = [
-    { lang: 'en', flag: '🇬🇧', label: 'EN' },
-    { lang: 'de', flag: '🇩🇪', label: 'DE' },
-  ];
-  host.innerHTML = flags
-    .map(
-      (f, i) =>
-        `${i ? '<span class="lang-sep" aria-hidden="true">|</span>' : ''}<button type="button" class="lang-btn${f.lang === current ? ' active' : ''}" data-lang="${f.lang}" aria-pressed="${f.lang === current}" aria-label="${t(`lang.${f.lang}`)}" title="${t(`lang.${f.lang}`)}"><span class="flag">${f.flag}</span><span class="lang-code">${f.label}</span></button>`
-    )
-    .join('');
-  host.querySelectorAll('.lang-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const lang = btn.getAttribute('data-lang');
-      if (lang === getLang()) return;
-      setLang(lang);
-      // Reload so every string — static and already-rendered — is regenerated.
-      window.location.reload();
-    });
+  const other = current === 'de' ? 'en' : 'de';
+  const flags = { en: '🇬🇧', de: '🇩🇪' };
+  const label = { en: 'EN', de: 'DE' };
+  // A single toggle tab: shows the CURRENT language; clicking switches to the other.
+  host.innerHTML = `<button type="button" class="lang-btn active" data-to="${other}" aria-label="${t('lang.aria')}: ${t(`lang.${current}`)}" title="${t(`lang.${other}`)}"><span class="flag">${flags[current]}</span><span class="lang-code">${label[current]}</span></button>`;
+  host.querySelector('.lang-btn').addEventListener('click', (e) => {
+    const to = e.currentTarget.getAttribute('data-to');
+    setLang(to);
+    // Reload so every string — static and already-rendered — is regenerated.
+    window.location.reload();
   });
 }
 
