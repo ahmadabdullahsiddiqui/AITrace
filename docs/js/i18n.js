@@ -289,14 +289,15 @@ export function initLangSwitcher() {
   const current = getLang();
   host.setAttribute('role', 'group');
   host.setAttribute('aria-label', t('lang.aria'));
+  // A single segmented tab: [ 🇬🇧 EN | 🇩🇪 DE ] with the active side highlighted.
   const flags = [
     { lang: 'en', flag: '🇬🇧', label: 'EN' },
     { lang: 'de', flag: '🇩🇪', label: 'DE' },
   ];
   host.innerHTML = flags
     .map(
-      (f) =>
-        `<button type="button" class="lang-btn${f.lang === current ? ' active' : ''}" data-lang="${f.lang}" aria-pressed="${f.lang === current}" aria-label="${t(`lang.${f.lang}`)}" title="${t(`lang.${f.lang}`)}"><span class="flag">${f.flag}</span><span class="lang-code">${f.label}</span></button>`
+      (f, i) =>
+        `${i ? '<span class="lang-sep" aria-hidden="true">|</span>' : ''}<button type="button" class="lang-btn${f.lang === current ? ' active' : ''}" data-lang="${f.lang}" aria-pressed="${f.lang === current}" aria-label="${t(`lang.${f.lang}`)}" title="${t(`lang.${f.lang}`)}"><span class="flag">${f.flag}</span><span class="lang-code">${f.label}</span></button>`
     )
     .join('');
   host.querySelectorAll('.lang-btn').forEach((btn) => {
